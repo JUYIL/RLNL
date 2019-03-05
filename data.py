@@ -1,39 +1,52 @@
-#use ns3:put the py file into scratch ,and do 'sudo ./waf' ,and do 'sudo ./waf --run scratch/xx.py'
-# or use ns3:put the py file into examples/tutorial ,and do 'sudo ./waf shell' ,and do 'python examples/tutoris/xx.py'
+#nodepolicy=nodetrain(50, 10, 30) 2018/02/27
+# RLN   rec:0.1515  re:72127.83843000006   co:160394.97538499985  rc:0.4496888899223302  nu:0.15374800861348137 lu:0.09680522472645106
+# linktrain failed and RLNL failed
 
+#nodepolicy=nodetrain(10, 10, 30) 2018/02/27
+# RLN   0.1795  91836.10234 118945.05815 0.7720884227944529  	0.1179 0.0520006
+# linktrain(10,10,30) RLNL 55126     0.207   0.7034400519832924  0.13819189 0.074741
 
-#nodepolicy=nodetrain(100,10,10)
-# loss=[-0.68882525, -6.7357836, -7.085208, -13.986984, -12.207991, -1.865915, -11.748765, -9.66674, -43.950783, -31.700064, 9.906415, 9.214397, -32.584053, -10.84284, -33.46363, -11.337918, 58.415283, -33.91457, -67.962105, -37.74879, -168.83038, -1.3054291, -8.631139, -12.20495, -12.994113, -57.473747, -52.345146, 17.64909, -33.919453, -49.440025, 2.519696, -72.82175, -112.80562, -24.73315, -89.57804, -31.559626, -74.235214, -72.22453, -34.146904, -7.362474, 2.1849473, -6.2094307, -50.648155, -71.21638, -11.151159, 46.55529, 13.797506, 75.01878, -130.16266, -21.584011, 3.1370454, -34.626385, -53.3438, 41.567005, 38.87794, -72.15147, 121.77605, -160.21576, -40.46413, -54.42108, -32.793392, -35.47137, 0.3084198, 105.242355, -118.256714, -213.57578, 4.719925, -149.70903, -10.029096, -67.04831, -38.157715, -5.8426933, 44.781788, -161.71738, 48.88969, -88.859055, 82.877396, 81.312004, -83.346725, -27.54137, 8.104889, 15.184992, -13.969592, 11.776227, 36.931786, 0.71698076, 44.267887, -96.352036, -130.15063, -139.7129, -39.033577, 66.12007, 135.39908, 70.655365, -194.47433, 89.63069, -35.911896, 103.41206, -70.32839, -96.25341]
-#time=18h
-#w=[[[[-1.1386735 ]]  [[ 0.27748054]]  [[ 0.4875062 ]]  [[ 0.43316445]] [[-0.01042795]]]]
-#b=[0.6251562]
+#nodepolicy=nodetrain(100, 10, 30) 2018/02/28
+# RLN 0.1795 0.77 0.11 0.05
+# linktrain(10,10,30) RLNL 0.207 0.70 0.13 0.07
 
-#linkpolicy=linktrain(10,10,10)
-#loss=[-3.735865, -20.33009, -66.555664, -103.53886, -153.76079, -250.67651, -261.62225, -121.97445, -271.34113, -469.16202]
-#w=[0.6979364 ,0.18774256] b=0.01831355
-
-
-#nodepolicy=nodetrain(10, 10, 100)
-#w=[-0.05357093,-0.0982222 ,-0.14254999,0.10401394,-0.19172193] b=-0.04606837
-
-
-
+#new nodepolicy 10
+# RLN 0.3845  0.5088150393206318  	0.24096158401880854 	0.22385629194839932
 
 import time
 from train import *
 from onlinemap import *
 
 
+# def train(n):
+#     recs, rcs=[], []
+#     while n<31:
+#         nodepolicy = nodetrain(n, 10, 30)
+#         nodesaver = tf.train.Saver()
+#         nodesaver.save(nodepolicy.sess, "./nodemodel/nodemodel.ckpt")
+#         nof(n)
+#         rec, rc = RLN()
+#         recs.append(rec)
+#         rcs.append(rc)
+#         n+=10
+#     plt.figure(1)
+#     x=[i for i in range(10,40,10)]
+#     plt.plot(x, recs)
+#     plt.xlabel("eponum", fontsize=12)
+#     plt.ylabel('acceptance', fontsize=12)
+#     plt.title('acp change ', fontsize=15)
+#     plt.savefig('Results/acp.jpg')
+#     plt.figure(2)
+#     x = [i for i in range(10,40,10)]
+#     plt.plot(x, rcs)
+#     plt.xlabel("eponum", fontsize=12)
+#     plt.ylabel('rc', fontsize=12)
+#     plt.title('rc change ', fontsize=15)
+#     plt.savefig('Results/rc.jpg')
 
-def train(n):
-    nodepolicy=nodetrain(n, 10, 30)
-    nodesaver = tf.train.Saver()
-    nodesaver.save(nodepolicy.sess, "./nodemodel/nodemodel.ckpt")
-    nof(n)
-    rec, rc = RLN()
-    print(rec,rc)
 
-train(10)
+
+
 
 # def train(n):
 #     linkpolicy=linktrain(n, 10, 30)
@@ -42,4 +55,18 @@ train(10)
 #     lif(n)
 #     rec, rc = RLNL()
 #     print(rec,rc)
+#
+
+
+def train(n):
+    trs=get_training_set(1000)
+    nodep=NodePolicy(sub1,sub1.number_of_nodes(),5,n,100)
+    nodep.train(trs)
+    nodesaver = tf.train.Saver()
+    nodesaver.save(nodep.sess, "./nodemodel/nodemodel.ckpt")
+    nof(n)
+    rec, rc = RLN()
+    print(rec,rc)
+
+train(10)
 

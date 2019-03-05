@@ -89,8 +89,8 @@ class NodeEnv(gym.Env):
                       self.avrdis)
 
         # reward = self.sub.nodes[action]['cpu_remain'] / self.sub.nodes[action]['cpu']
-        # reward = 0.0
-        reward = self.vnr.nodes[self.count]['cpu'] / self.sub.nodes[action]['cpu_remain']
+        reward = 0.0
+        # reward = self.vnr.nodes[self.count]['cpu'] / self.sub.nodes[action]['cpu_remain']
         return np.vstack(self.state).transpose(), reward, False, {}
 
     def statechange(self, nodemap):

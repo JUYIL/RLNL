@@ -223,6 +223,22 @@ def getreqs(reqnum,j):
 
     return reqs
 
+def get_training_set(reqnum):
+    reqs = []
+    for i in range(reqnum):
+        filename = 'trainVN/req%s.txt' % i
+        vnr_arrive = create_req(i, filename)
+        vnr_leave = copy.deepcopy(vnr_arrive)
+        vnr_leave.graph['type'] = 1
+        vnr_leave.graph['time'] = vnr_arrive.graph['time'] + vnr_arrive.graph['duration']
+        reqs.append(vnr_arrive)
+        reqs.append(vnr_leave)
+
+    # sort the reqs by their time(including arrive time and depart time)
+    reqs.sort(key=lambda r: r.graph['time'])
+
+    return reqs
+
 def gettestreqs(reqnum):
     reqs = []
     for i in range(reqnum):
@@ -258,7 +274,21 @@ def linkuti(sub):
 def nof(n):
     plt.figure()
     loss = []
-    with open('losslog.txt') as file_object:
+    with open('Results/losslog-%s.txt' % n) as file_object:
+        lines = file_object.readlines()
+    for line in lines[1:]:
+        loss.append(float(line))
+    x = [i for i in range(n)]
+    plt.plot(x, loss)
+    plt.xlabel("eponum", fontsize=12)
+    plt.ylabel('loss', fontsize=12)
+    plt.title('nodeloss change', fontsize=15)
+    plt.savefig('Results/node%s.jpg' % n)
+
+def lif(n):
+    plt.figure()
+    loss = []
+    with open('Results/linklosslog.txt') as file_object:
         lines = file_object.readlines()
     for line in lines:
         loss.append(float(line))
@@ -266,22 +296,24 @@ def nof(n):
     plt.plot(x, loss)
     plt.xlabel("eponum", fontsize=12)
     plt.ylabel('loss', fontsize=12)
-    plt.title('nodeloss change (%s,10,30)' % n, fontsize=15)
-    plt.savefig('Results/node%s.jpg' % n)
-
-def lif(n):
-    plt.figure()
-    loss = []
-    with open('linklosslog.txt') as file_object:
-        lines = file_object.readlines()
-    for line in lines:
-        loss.append(float(line))
-    x = [i for i in range(10)]
-    plt.plot(x, loss)
-    plt.xlabel("eponum", fontsize=12)
-    plt.ylabel('loss', fontsize=12)
     plt.title('linkloss change (%s,10,30)' % n, fontsize=15)
     plt.savefig('Results/link%s.jpg' % n)
+
+def bfslinkmap(sub,req,node_map):
+    link_map = {}
+    for link in req.edges:
+        vn_from = link[0]
+        vn_to = link[1]
+        sn_from = node_map[vn_from]
+        sn_to = node_map[vn_to]
+        if nx.has_path(sub, sn_from, sn_to):
+            for path in nx.all_shortest_paths(sub, source=sn_from, target=sn_to):
+                if minbw(sub, path) >= req[vn_from][vn_to]['bw']:
+                    link_map.update({link: path})
+                    break
+                else:
+                    continue
+    return link_map
 
 # create a substrate network
 sub1 = create_sub('sub.txt')

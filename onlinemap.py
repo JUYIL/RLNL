@@ -26,8 +26,9 @@ def RLNL():
     mapped_info={}
     evaluate={}
     for req in reqs:
-        arrived+=1
+
         if req.graph['type'] == 0:
+            arrived += 1
             print('req%d is mapping... ' % req.graph['id'])
             print('node mapping...')
             reqr = 0
@@ -132,8 +133,8 @@ def RLN():
     evaluate={}
 
     for req in reqs:
-        arrived+=1
         if req.graph['type'] == 0:
+            arrived += 1
             print('req%d is mapping... ' % req.graph['id'])
             print('node mapping...')
             reqr = 0
