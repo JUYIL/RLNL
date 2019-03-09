@@ -1,6 +1,3 @@
-#nodepolicy=nodetrain(50, 10, 30) 2018/02/27
-# RLN   rec:0.1515  re:72127.83843000006   co:160394.97538499985  rc:0.4496888899223302  nu:0.15374800861348137 lu:0.09680522472645106
-# linktrain failed and RLNL failed
 
 #nodepolicy=nodetrain(10, 10, 30) 2018/02/27
 # RLN   0.1795  91836.10234 118945.05815 0.7720884227944529  	0.1179 0.0520006
@@ -16,57 +13,47 @@
 import time
 from train import *
 from onlinemap import *
-
-
-# def train(n):
-#     recs, rcs=[], []
-#     while n<31:
-#         nodepolicy = nodetrain(n, 10, 30)
-#         nodesaver = tf.train.Saver()
-#         nodesaver.save(nodepolicy.sess, "./nodemodel/nodemodel.ckpt")
-#         nof(n)
-#         rec, rc = RLN()
-#         recs.append(rec)
-#         rcs.append(rc)
-#         n+=10
-#     plt.figure(1)
-#     x=[i for i in range(10,40,10)]
-#     plt.plot(x, recs)
-#     plt.xlabel("eponum", fontsize=12)
-#     plt.ylabel('acceptance', fontsize=12)
-#     plt.title('acp change ', fontsize=15)
-#     plt.savefig('Results/acp.jpg')
-#     plt.figure(2)
-#     x = [i for i in range(10,40,10)]
-#     plt.plot(x, rcs)
-#     plt.xlabel("eponum", fontsize=12)
-#     plt.ylabel('rc', fontsize=12)
-#     plt.title('rc change ', fontsize=15)
-#     plt.savefig('Results/rc.jpg')
+from compare1 import *
 
 
 
 
 
-# def train(n):
-#     linkpolicy=linktrain(n, 10, 30)
-#     linksaver=tf.train.Saver()
-#     linksaver.save(linkpolicy.sess, "./linkmodel/linkmodel.ckpt")
-#     lif(n)
-#     rec, rc = RLNL()
-#     print(rec,rc)
-#
 
 
 def train(n):
     trs=get_training_set(1000)
-    nodep=NodePolicy(sub1,sub1.number_of_nodes(),5,n,100)
-    nodep.train(trs)
-    nodesaver = tf.train.Saver()
-    nodesaver.save(nodep.sess, "./nodemodel/nodemodel.ckpt")
-    nof(n)
-    rec, rc = RLN()
+    linkp=LinkPolicy(sub1,len(getallpath(sub1)),2,n,100)
+    linkp.train(trs)
+    linksaver=tf.train.Saver()
+    linksaver.save(linkp.sess, "./linkmodel/linkmodel.ckpt")
+    lif(n)
+    rec, rc = RLNL()
     print(rec,rc)
 
-train(10)
 
+
+# def train(n):
+#     trs=get_training_set(1000)
+#     nodep=NodePolicy(sub1,sub1.number_of_nodes(),5,n,100)
+#     nodep.train(trs)
+#     nodesaver = tf.train.Saver()
+#     nodesaver.save(nodep.sess, "./nodemodel/nodemodel.ckpt")
+#     nof(n)
+#     rec, rc = RLN()
+#     print(rec,rc)
+# train(10)
+
+# def comp1train(n):
+#     trs=get_training_set(1000)
+#     nodep=RL(sub1,sub1.number_of_nodes(),4,learning_rate=0.05,num_epoch=1,batch_size=100)
+#     nodep.train(trs)
+#     nodesaver = tf.train.Saver()
+#     nodesaver.save(nodep.sess, "./nodemodel/cp1nodemodel.ckpt")
+#     nof(n)
+#     rec, rc = RLN()
+#     print(rec,rc)
+
+
+rec, rc = RLNL()
+print(rec,rc)

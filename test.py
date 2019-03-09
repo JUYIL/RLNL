@@ -6,6 +6,9 @@ import os
 import math
 
 
+
+
+
 # read = tf.train.NewCheckpointReader("./nodemodel/nodemodel.ckpt")
 # a = read.get_tensor('conv/weights')
 # b = read.get_tensor('conv/bias')
@@ -17,9 +20,8 @@ import math
 # print(a, b)
 
 
-# print(os.system("cd /home/lm/ns-allinone-3.27/ns-3.27/examples/tutorial ; echo '123' | sudo -S  /home/lm/PycharmProjects/hello/ns-allinone-3.27/ns-3.27/waf --run mytest"))
+# print(os.system("cd /home/lm/ns_allinone_3_27/ns ; echo '123' | sudo -S  /home/lm/PycharmProjects/hello/ns_allinone_3_27/ns/waf --run mycc"))
 
-# print(os.system("cd /home/lm/ns-allinone-3.27/ns-3.27/examples/tutorial ; echo '123' | sudo -S  /home/lm/PycharmProjects/hello/ns-allinone-3.27/ns-3.27/waf --pyrun examples/tutorial/my.py"))
+# print(os.system("cd /home/lm/ns_allinone_3_27/ns/examples/tutorial ; echo '123' | sudo -S  /home/lm/PycharmProjects/hello/ns_allinone_3_27/ns/waf --pyrun examples/tutorial/my.py"))
 
-for i in range(20//8,0,-1):
-    print(i)
+

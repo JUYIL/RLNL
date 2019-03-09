@@ -97,7 +97,6 @@ class NodeEnv(gym.Env):
         for vid, sid in nodemap.items():
             self.sub.nodes[sid]['cpu_remain'] += self.vnr.nodes[vid]['cpu']
 
-
         self.cpu_remain, self.bw_all_remain = [], []
         for u in range(self.n_action):
             self.cpu_remain.append(self.sub.nodes[u]['cpu_remain'])
@@ -111,10 +110,6 @@ class NodeEnv(gym.Env):
                     np.max(self.cpu_remain) - np.min(self.cpu_remain))
         self.bw_all_remain = (self.bw_all_remain - np.min(self.bw_all_remain)) / (
                     np.max(self.bw_all_remain) - np.min(self.bw_all_remain))
-
-
-
-
 
         self.state = (self.cpu_remain,
                       self.bw_all_remain,
@@ -181,7 +176,7 @@ class LinkEnv(gym.Env):
         self.mbw_remain = []
         thepath = list(self.linkpath[action].values())[0]
 
-        reward = self.vnr[self.link[0]][self.link[1]]['bw'] / minbw(self.sub, thepath)
+        # reward = self.vnr[self.link[0]][self.link[1]]['bw'] / minbw(self.sub, thepath)
 
         i = 0
         while i < len(thepath) - 1:
@@ -199,7 +194,7 @@ class LinkEnv(gym.Env):
         self.state = (self.mbw_remain,self.btn)
 
         # reward = self.vnr[self.link[0]][self.link[1]]['bw'] / minbw(self.sub,thepath)
-
+        reward=0.0
         return np.vstack(self.state).transpose(), reward, False, {}
 
     def statechange(self,sub,linkmap):

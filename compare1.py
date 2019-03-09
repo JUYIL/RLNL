@@ -5,6 +5,7 @@ import tensorflow as tf
 import numpy as np
 import copy
 import time
+from network import bfslinkmap
 
 
 
@@ -32,8 +33,8 @@ class RL:
             values = []
             print("Iteration %s" % iteration)
             # 每轮训练开始前，都需要重置底层网络和相关的强化学习环境
-            sub_copy = copy.deepcopy(self.sub)
-            env = Env(self.sub.net)
+            # sub_copy = copy.deepcopy(self.sub)
+            env = Env(self.sub)
             # 创建存储参数梯度的缓冲器
             grad_buffer = self.sess.run(self.tvars)
             # 初始化为0
@@ -41,6 +42,9 @@ class RL:
                 grad_buffer[ix] = grad * 0
             # 记录已经处理的虚拟网络请求数量
             counter = 0
+            mapped_info = {}
+            reqr, reqc = 0, 0
+            obsreset = env.reset()
             for req in training_set:
                 # 当前待映射的虚拟网络请求ID
                 req_id = req.graph['id']
@@ -50,17 +54,16 @@ class RL:
 
                     print("\tIt's a newly arrived request, try to map it...")
                     counter += 1
-                    sub_copy.total_arrived = counter
                     # 向环境传入当前的待映射虚拟网络
                     env.set_vnr(req)
                     # 获得底层网络的状态
-                    observation = env.reset()
+                    observation = obsreset
 
                     node_map = {}
                     xs, acts = [], []
                     for vn_id in range(req.number_of_nodes()):
                         x = np.reshape(observation, [1, observation.shape[0], observation.shape[1], 1])
-                        sn_id = self.choose_action(observation, sub_copy.net, req.nodes[vn_id]['cpu'], acts)
+                        sn_id = self.choose_action(observation, self.sub, req.nodes[vn_id]['cpu'], acts)
                         if sn_id == -1:
                             break
                         else:
@@ -74,9 +77,23 @@ class RL:
                     # end for,即一个VNR的全部节点映射全部尝试完毕
 
                     if len(node_map) == req.number_of_nodes():
-                        reward, link_map = self.calculate_reward(sub_copy, req, node_map)
-                        if reward != -1:
-
+                        print('link mapping...')
+                        link_map = bfslinkmap(env.sub, req, node_map)
+                        if len(link_map) == req.number_of_edges():
+                            print('req%d is mapped ' % req.graph['id'])
+                            for node in req.nodes:
+                                reqr += req.nodes[node]['cpu']
+                            reqc = reqr
+                            for vl, pl in link_map.items():
+                                vfr, vto = vl[0], vl[1]
+                                reqr += req[vfr][vto]['bw']
+                                reqc += req[vfr][vto]['bw'] * (len(pl) - 1)
+                                i = 0
+                                while i < len(pl) - 1:
+                                    env.sub[pl[i]][pl[i + 1]]['bw_remain'] -= req[vfr][vto]['bw']
+                                    i += 1
+                            mapped_info.update({req.graph['id']: (node_map, link_map)})
+                            reward=reqr/reqc
                             ys = tf.one_hot(acts, self.n_actions)
                             epx = np.vstack(xs)
                             epy = tf.Session().run(ys)
@@ -97,12 +114,12 @@ class RL:
                                 grad_buffer[ix] += grad
                             grad_buffer[0] *= reward
                             grad_buffer[1] *= reward
-
-                            # 更新底层网络
-                            sub_copy.mapped_info.update({req.graph['id']: (node_map, link_map)})
-                            sub_copy.change_resource(req, 'allocate')
                         else:
-                            print("Failure!")
+                            obsreset = env.statechange(node_map)
+                            print('req%d mapping is failed ' % req.graph['id'])
+                    else:
+                        obsreset = env.statechange(node_map)
+                        print('req%d mapping is failed ' % req.graph['id'])
 
                     # 当实验次数达到batch size整倍数，累积的梯度更新一次参数
                     if counter % self.batch_size == 0:
@@ -115,12 +132,21 @@ class RL:
                             grad_buffer[ix] = grad * 0
 
                 if req.graph['type'] == 1:
-
-                    print("\tIt's time is out, release the occupied resources")
-                    if req_id in sub_copy.mapped_info.keys():
-                        sub_copy.change_resource(req, 'release')
-
-                env.set_sub(sub_copy.net)
+                    if mapped_info.__contains__(req.graph['id']):
+                        print('req%d is leaving... ' % req.graph['id'])
+                        env.set_vnr(req)
+                        reqid = req.graph['id']
+                        nodemap = mapped_info[reqid][0]
+                        linkmap = mapped_info[reqid][1]
+                        for vl, path in linkmap.items():
+                            i = 0
+                            while i < len(path) - 1:
+                                env.sub[path[i]][path[i + 1]]['bw_remain'] += req[vl[0]][vl[1]]['bw']
+                                i += 1
+                        obsreset = env.statechange(nodemap)
+                        mapped_info.pop(reqid)
+                    else:
+                        pass
 
             loss_average.append(np.mean(values))
             iteration = iteration + 1
@@ -272,18 +298,8 @@ class RL:
 #Env
 import gym
 from gym import spaces
-import copy
 import networkx as nx
-
-
-
-def calculate_adjacent_bw(graph, u, kind='bw'):
-    """计算一个节点的相邻链路带宽和，默认为总带宽和，若计算剩余带宽资源和，需指定kind属性为bw-remain"""
-
-    bw_sum = 0
-    for v in graph.neighbors(u):
-        bw_sum += graph[u][v][kind]
-    return bw_sum
+from network import calculate_adjacent_bw
 
 
 class Env(gym.Env):
@@ -303,9 +319,6 @@ class Env(gym.Env):
         for i in nx.degree_centrality(sub).values():
             self.degree.append(i)
         self.vnr = None
-
-    def set_sub(self, sub):
-        self.sub = copy.deepcopy(sub)
 
     def set_vnr(self, vnr):
         self.vnr = vnr
@@ -337,6 +350,29 @@ class Env(gym.Env):
                       self.degree,
                       avg_dst)
         return np.vstack(self.state).transpose(), 0.0, False, {}
+
+    def statechange(self, nodemap):
+        self.count = -1
+        self.actions = []
+        cpu_remain, bw_all_remain = [], []
+
+        for vid, sid in nodemap.items():
+            self.sub.nodes[sid]['cpu_remain'] += self.vnr.nodes[vid]['cpu']
+        for u in range(self.n_action):
+            cpu_remain.append(self.sub.nodes[u]['cpu_remain'])
+            bw_all_remain.append(calculate_adjacent_bw(self.sub, u, 'bw_remain'))
+        for vid, sid in nodemap.items():
+            bw_all_remain[sid]+=calculate_adjacent_bw(self.vnr, vid)
+
+        cpu_remain = (cpu_remain - np.min(cpu_remain)) / (np.max(cpu_remain) - np.min(cpu_remain))
+        bw_all_remain = (bw_all_remain - np.min(bw_all_remain)) / (np.max(bw_all_remain) - np.min(bw_all_remain))
+        avg_dst = np.zeros(self.n_action).tolist()
+
+        self.state = (cpu_remain,
+                      bw_all_remain,
+                      self.degree,
+                      avg_dst)
+        return np.vstack(self.state).transpose()
 
     def reset(self):
         """获得底层网络当前最新的状态"""

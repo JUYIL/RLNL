@@ -288,15 +288,15 @@ def nof(n):
 def lif(n):
     plt.figure()
     loss = []
-    with open('Results/linklosslog.txt') as file_object:
+    with open('Results/linklosslog-%s.txt' % n) as file_object:
         lines = file_object.readlines()
-    for line in lines:
+    for line in lines[1:]:
         loss.append(float(line))
     x = [i for i in range(n)]
     plt.plot(x, loss)
     plt.xlabel("eponum", fontsize=12)
     plt.ylabel('loss', fontsize=12)
-    plt.title('linkloss change (%s,10,30)' % n, fontsize=15)
+    plt.title('linkloss change', fontsize=15)
     plt.savefig('Results/link%s.jpg' % n)
 
 def bfslinkmap(sub,req,node_map):
