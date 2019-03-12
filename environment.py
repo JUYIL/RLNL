@@ -38,7 +38,7 @@ class NodeEnv(gym.Env):
         for j in nx.closeness_centrality(sub).values():
             self.closeness.append(j)
         # average distance to mapped nodes
-        self.avrdis=[0.5 for k in range(100)]
+        self.avrdis=np.zeros(self.n_action).tolist()
         self.state = None
 
     def set_vnr(self,vnr):
@@ -56,37 +56,35 @@ class NodeEnv(gym.Env):
             self.cpu_remain.append(self.sub.nodes[u]['cpu_remain'])
             self.bw_all_remain.append(adjacent_bw)
 
+
         self.cpu_remain = (self.cpu_remain - np.min(self.cpu_remain)) / (
                 np.max(self.cpu_remain) - np.min(self.cpu_remain))
         self.bw_all_remain = (self.bw_all_remain - np.min(self.bw_all_remain)) / (
                 np.max(self.bw_all_remain) - np.min(self.bw_all_remain))
         self.reqas.append(action)
 
-
-
-        if len(self.reqas)==self.vnr.number_of_nodes():
-            self.avrdis=[0.5 for i in range(100)]
+        avg_dst = []
+        if len(self.reqas) == self.vnr.number_of_nodes():
+            avg_dst=np.zeros(self.n_action).tolist()
             self.reqas=[]
 
         else:
-            sumdis=[0 for i in range(100)]
-            for ac in self.reqas:
-                b=caculate_avr_dis(ac)
-                # print(b)
-                for i in range(100):
+            for u in range(self.n_action):
+                sum_dst = 0
+                for v in self.reqas:
+                    sum_dst += nx.shortest_path_length(self.sub, source=u, target=v)
+                sum_dst /= (len(self.reqas) + 1)
+                avg_dst.append(sum_dst)
 
-                    sumdis[i]+=b[i]
-
-            averdis_=[s/len(self.reqas) for s in sumdis]
-
-            self.avrdis=[(s - np.min(averdis_)) / (np.max(averdis_) - np.min(averdis_)) for s in averdis_]
+        avg_dst = (avg_dst - np.min(avg_dst)) / (np.max(avg_dst) - np.min(avg_dst))
+        # self.avrdis=[(s - np.min(avg_dst)) / (np.max(avg_dst) - np.min(avg_dst)) for s in avg_dst]
 
 
         self.state = (self.cpu_remain,
                       self.bw_all_remain,
                       self.degree,
                       self.closeness,
-                      self.avrdis)
+                      avg_dst)
 
         # reward = self.sub.nodes[action]['cpu_remain'] / self.sub.nodes[action]['cpu']
         reward = 0.0
@@ -125,7 +123,7 @@ class NodeEnv(gym.Env):
         self.sub = copy.deepcopy(self.origin)
         self.cpu_remain = self.cpu_all
         self.bw_all_remain = self.bw_all
-        self.avrdis=[0.5 for i in range(100)]
+        self.avrdis=np.zeros(self.n_action).tolist()
         self.state = (self.cpu_remain,
                       self.bw_all_remain,
                       self.degree,

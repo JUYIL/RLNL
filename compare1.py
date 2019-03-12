@@ -43,16 +43,13 @@ class RL:
             # 记录已经处理的虚拟网络请求数量
             counter = 0
             mapped_info = {}
-            reqr, reqc = 0, 0
             obsreset = env.reset()
             for req in training_set:
-                # 当前待映射的虚拟网络请求ID
-                req_id = req.graph['id']
-                print("\nHandling req%s..." % req_id)
 
                 if req.graph['type'] == 0:
-
-                    print("\tIt's a newly arrived request, try to map it...")
+                    reqr, reqc = 0, 0
+                    print('req%d is mapping... ' % req.graph['id'])
+                    print('node mapping...')
                     counter += 1
                     # 向环境传入当前的待映射虚拟网络
                     env.set_vnr(req)
@@ -72,7 +69,7 @@ class RL:
                             # 将选择的动作添加到acts列表中
                             acts.append(sn_id)
                             # 执行一次action，获取返回的四个数据
-                            observation, _, done, info = env.step(sn_id)
+                            obsreset, _, done, info = env.step(sn_id)
                             node_map.update({vn_id: sn_id})
                     # end for,即一个VNR的全部节点映射全部尝试完毕
 
@@ -152,7 +149,7 @@ class RL:
             iteration = iteration + 1
 
         end = (time.time() - start) / 3600
-        with open('results/loss-%s.txt' % self.num_epoch, 'w') as f:
+        with open('Results/c1losslog-%s.txt' % self.num_epoch, 'w') as f:
             f.write("Training time: %s hours\n" % end)
             for value in loss_average:
                 f.write(str(value))
@@ -322,6 +319,7 @@ class Env(gym.Env):
 
     def set_vnr(self, vnr):
         self.vnr = vnr
+        self.count=-1
 
     def step(self, action):
         self.actions.append(action)

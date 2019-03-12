@@ -605,6 +605,63 @@ class linkpolicy:
         return action
 
 
+# compare1 trained node policy
+class c1nodepolicy:
+    def __init__(self,
+                 n_actions,
+                 n_features,
+                 ):
+        self.n_actions = n_actions
+        self.n_features = n_features
+        self._build_net()
+        self.req_as = []
+        self.sess = tf.Session()
+        self.sess.run(tf.global_variables_initializer())
+
+    def _build_net(self):
+        with tf.name_scope('inputs'):
+            self.tf_obs = tf.placeholder(tf.float32, [None, self.n_features[0], self.n_features[1], 1],
+                                         name="observations")
+
+        with tf.name_scope('conv'):
+            read=tf.train.NewCheckpointReader('./nodemodel/cp1nodemodel.ckpt')
+
+            kernel=read.get_tensor('conv/weights')
+            conv = tf.nn.conv2d(input=self.tf_obs,
+                                filter=kernel,
+                                strides=(1, 1,self.n_features[1],1),
+                                padding='VALID')
+            biases=read.get_tensor('conv/bias')
+            conv1=tf.nn.relu(tf.nn.bias_add(conv,biases))
+            self.scores=tf.reshape(conv1,[-1,self.n_features[0]])
+
+        with tf.name_scope('output'):
+            self.probs=tf.nn.softmax(self.scores)
+
+    def choose_max_action(self,observation,sub,current_node_cpu,curreqnum):
+        x = np.reshape(observation, [1, observation.shape[0], observation.shape[1], 1])
+        prob_weights = self.sess.run(self.scores,
+                                     feed_dict={self.tf_obs: x})
+
+        candidate_action = []
+        candidate_score = []
+        for index, score in enumerate(prob_weights.ravel()):
+            if index not in self.req_as and sub.nodes[index]['cpu_remain'] >= current_node_cpu:
+                candidate_action.append(index)
+                candidate_score.append(score)
+        if len(candidate_action) == 0:
+            return -1
+        else:
+            action_index = candidate_score.index(np.max(candidate_score))
+            action = candidate_action[action_index]
+
+        self.req_as.append(action)
+        if len(self.req_as) == curreqnum:
+            self.req_as = []
+
+        return action
+
+
 # class NodePolicy:
 #
 #     def __init__(self,
