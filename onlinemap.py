@@ -77,7 +77,7 @@ def RLNL():
                     mapped_info.update({req.graph['id']: (node_map, link_map)})
                 else:
                     nodeobsreset = nodeenv.statechange(node_map)
-                    linkobsreset = linkenv.statechange(linkenv.sub, link_map)
+                    linkobsreset = linkenv.statechange(link_map)
                     print('req%d mapping is failed ' % req.graph['id'])
             else:
                 print(node_map)
@@ -93,7 +93,7 @@ def RLNL():
                 nodemap = mapped_info[reqid][0]
                 linkmap = mapped_info[reqid][1]
                 nodeobsreset = nodeenv.statechange(nodemap)
-                linkobsreset = linkenv.statechange(linkenv.sub,linkmap)
+                linkobsreset = linkenv.statechange(linkmap)
                 mapped_info.pop(reqid)
             else:
                 pass

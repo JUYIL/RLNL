@@ -3,17 +3,17 @@
   <component name="ChangeListManager">
     <list default="true" id="75039dd6-6ef8-4d4a-8939-b082ee2533a6" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Results/RLN.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Results/RLN.txt" beforeDir="false" afterPath="$PROJECT_DIR$/Results/RLN.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Results/c1losslog-10.txt" beforeDir="false" afterPath="$PROJECT_DIR$/Results/c1losslog-10.txt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Results/c1losslog-100.txt" beforeDir="false" afterPath="$PROJECT_DIR$/Results/c1losslog-100.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Results/c1node100.jpg" beforeDir="false" afterPath="$PROJECT_DIR$/Results/c1node100.jpg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Results/losslog-1.txt" beforeDir="false" afterPath="$PROJECT_DIR$/Results/losslog-1.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Results/losslog-10.txt" beforeDir="false" afterPath="$PROJECT_DIR$/Results/losslog-10.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Results/node1.jpg" beforeDir="false" afterPath="$PROJECT_DIR$/Results/node1.jpg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Results/node10.jpg" beforeDir="false" afterPath="$PROJECT_DIR$/Results/node10.jpg" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Results/c1node10.jpg" beforeDir="false" afterPath="$PROJECT_DIR$/Results/c1node10.jpg" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Results/rl.txt" beforeDir="false" afterPath="$PROJECT_DIR$/Results/rl.txt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/compare1.py" beforeDir="false" afterPath="$PROJECT_DIR$/compare1.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/data.py" beforeDir="false" afterPath="$PROJECT_DIR$/data.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/environment.py" beforeDir="false" afterPath="$PROJECT_DIR$/environment.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/network.py" beforeDir="false" afterPath="$PROJECT_DIR$/network.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/linkmodel/linkmodel.ckpt.data-00000-of-00001" beforeDir="false" afterPath="$PROJECT_DIR$/linkmodel/linkmodel.ckpt.data-00000-of-00001" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/linkmodel/linkmodel.ckpt.index" beforeDir="false" afterPath="$PROJECT_DIR$/linkmodel/linkmodel.ckpt.index" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/linkmodel/linkmodel.ckpt.meta" beforeDir="false" afterPath="$PROJECT_DIR$/linkmodel/linkmodel.ckpt.meta" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/nodemodel/cp1nodemodel.ckpt.data-00000-of-00001" beforeDir="false" afterPath="$PROJECT_DIR$/nodemodel/cp1nodemodel.ckpt.data-00000-of-00001" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/nodemodel/cp1nodemodel.ckpt.index" beforeDir="false" afterPath="$PROJECT_DIR$/nodemodel/cp1nodemodel.ckpt.index" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/nodemodel/cp1nodemodel.ckpt.meta" beforeDir="false" afterPath="$PROJECT_DIR$/nodemodel/cp1nodemodel.ckpt.meta" afterDir="false" />
@@ -32,12 +32,23 @@
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
       <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/test.py">
+        <entry file="file://$PROJECT_DIR$/data.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="282">
-              <caret line="21" selection-start-line="21" selection-end-line="21" />
+            <state relative-caret-position="126">
+              <caret line="7" lean-forward="true" selection-start-line="7" selection-end-line="7" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/onlinemap.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="72">
+              <caret line="115" column="17" lean-forward="true" selection-start-line="115" selection-start-column="17" selection-end-line="115" selection-end-column="17" />
               <folding>
-                <element signature="e#0#23#0" expanded="true" />
+                <element signature="e#155#4593#0" />
+                <element signature="e#4638#9000#0" />
+                <element signature="e#9016#13375#0" />
               </folding>
             </state>
           </provider>
@@ -46,50 +57,24 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/network.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="184">
-              <caret line="180" column="17" selection-start-line="180" selection-start-column="17" selection-end-line="180" selection-end-column="17" />
+            <state relative-caret-position="91">
+              <caret line="190" column="4" selection-start-line="190" selection-start-column="4" selection-end-line="190" selection-end-column="4" />
               <folding>
                 <element signature="e#0#21#0" expanded="true" />
-                <element signature="e#139#792#0" />
-                <element signature="e#823#1538#0" />
-                <element signature="e#1592#1835#0" />
-                <element signature="e#3998#4252#0" />
-                <element signature="e#4279#4668#0" />
-                <element signature="e#4691#6123#0" />
-                <element signature="e#6144#6376#0" />
-                <element signature="e#6941#7437#0" />
-                <element signature="e#7468#7966#0" />
-                <element signature="e#7990#8162#0" />
-                <element signature="e#8186#8372#0" />
-                <element signature="e#8390#8790#0" />
-                <element signature="e#8810#9214#0" />
-                <element signature="e#9232#9636#0" />
-                <element signature="e#9676#10368#0" />
-                <element signature="e#7763#7783#0" />
               </folding>
             </state>
           </provider>
         </entry>
       </file>
       <file pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/data.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="126">
-              <caret line="7" column="1" lean-forward="true" selection-start-line="7" selection-start-column="1" selection-end-line="7" selection-end-column="1" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/policy.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="257">
-              <caret line="589" column="17" selection-start-line="589" selection-start-column="17" selection-end-line="589" selection-end-column="17" />
+            <state relative-caret-position="191">
+              <caret line="617" column="37" selection-start-line="617" selection-start-column="37" selection-end-line="617" selection-end-column="37" />
               <folding>
                 <element signature="e#0#23#0" expanded="true" />
-                <element signature="e#6131#6175#0" />
+                <element signature="e#2648#2677#0" />
                 <element signature="e#11031#11121#0" />
-                <element signature="e#10330#21622#0" />
                 <element signature="e#21693#23795#0" />
                 <element signature="e#23867#26132#0" />
                 <element signature="e#26196#28298#0" />
@@ -102,25 +87,10 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/compare1.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="64">
-              <caret line="312" column="82" selection-start-line="312" selection-start-column="82" selection-end-line="312" selection-end-column="82" />
+            <state relative-caret-position="226">
+              <caret line="254" column="82" selection-start-line="254" selection-start-column="82" selection-end-line="254" selection-end-column="82" />
               <folding>
                 <element signature="e#52#75#0" expanded="true" />
-                <element signature="e#11023#11095#0" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/onlinemap.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="158">
-              <caret line="226" column="9" selection-start-line="226" selection-start-column="9" selection-end-line="226" selection-end-column="9" />
-              <folding>
-                <element signature="e#132#4570#0" />
-                <element signature="e#4615#8977#0" />
-                <element signature="e#8994#13356#0" />
               </folding>
             </state>
           </provider>
@@ -129,22 +99,13 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/environment.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="216">
-              <caret line="249" column="35" selection-start-line="249" selection-start-column="35" selection-end-line="249" selection-end-column="35" />
+            <state relative-caret-position="306">
+              <caret line="17" column="25" selection-start-line="17" selection-start-column="25" selection-end-line="17" selection-end-column="25" />
               <folding>
                 <element signature="e#0#10#0" expanded="true" />
-                <element signature="e#154#9402#0" />
                 <element signature="e#8403#10581#0" />
+                <element signature="e#12245#12271#0" />
               </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/Results/RLN.txt">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="303">
-              <caret line="3895" column="14" selection-start-line="3895" selection-end-line="3896" />
             </state>
           </provider>
         </entry>
@@ -200,12 +161,12 @@
         <option value="$PROJECT_DIR$/ns_allinone_3_27/ns_3_27/waf.py" />
         <option value="$PROJECT_DIR$/ns_allinone_3_27/ns/waf.py" />
         <option value="$PROJECT_DIR$/test.py" />
-        <option value="$PROJECT_DIR$/onlinemap.py" />
         <option value="$PROJECT_DIR$/network.py" />
         <option value="$PROJECT_DIR$/environment.py" />
         <option value="$PROJECT_DIR$/compare1.py" />
         <option value="$PROJECT_DIR$/policy.py" />
         <option value="$PROJECT_DIR$/data.py" />
+        <option value="$PROJECT_DIR$/onlinemap.py" />
       </list>
     </option>
   </component>
@@ -228,11 +189,6 @@
             <path>
               <item name="hello" type="b2602c69:ProjectViewProjectNode" />
               <item name="hello" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="hello" type="b2602c69:ProjectViewProjectNode" />
-              <item name="hello" type="462c0819:PsiDirectoryNode" />
-              <item name="Results" type="462c0819:PsiDirectoryNode" />
             </path>
           </expand>
           <select />
@@ -418,12 +374,12 @@
     <frame x="67" y="25" width="1213" height="775" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.19411765" />
+      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.14453782" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" weight="0.8292411" />
-      <window_info anchor="bottom" id="Run" order="2" sideWeight="0.49663866" visible="true" weight="0.3126935" />
+      <window_info active="true" anchor="bottom" id="Run" order="2" sideWeight="0.49663866" visible="true" weight="0.36687306" />
       <window_info anchor="bottom" id="Debug" order="3" weight="0.3993808" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
@@ -464,8 +420,6 @@
     <option name="LAST_COMMIT_MESSAGE" value="second" />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/nodemodel/ttt.py" />
-    <entry file="file://$PROJECT_DIR$/ns_allinone_3_27/ns_3_27/waf" />
     <entry file="file://$PROJECT_DIR$/ns_allinone_3_27/ns/src/wscript" />
     <entry file="file://$PROJECT_DIR$/ns_allinone_3_27/ns/src/create-module.py" />
     <entry file="file://$PROJECT_DIR$/ns_allinone_3_27/ns/examples/tutorial/wscript" />
@@ -506,9 +460,6 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/VNRequest/req0.txt">
       <provider selected="true" editor-type-id="text-editor" />
-    </entry>
-    <entry file="file://$PROJECT_DIR$/Results/node100.jpg">
-      <provider selected="true" editor-type-id="images" />
     </entry>
     <entry file="file://$PROJECT_DIR$/test.py">
       <provider selected="true" editor-type-id="text-editor">
@@ -574,114 +525,105 @@
     <entry file="file://$PROJECT_DIR$/VNRequest/req40.txt">
       <provider selected="true" editor-type-id="text-editor" />
     </entry>
-    <entry file="file://$PROJECT_DIR$/network.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="184">
-          <caret line="180" column="17" selection-start-line="180" selection-start-column="17" selection-end-line="180" selection-end-column="17" />
-          <folding>
-            <element signature="e#0#21#0" expanded="true" />
-            <element signature="e#139#792#0" />
-            <element signature="e#823#1538#0" />
-            <element signature="e#1592#1835#0" />
-            <element signature="e#3998#4252#0" />
-            <element signature="e#4279#4668#0" />
-            <element signature="e#4691#6123#0" />
-            <element signature="e#6144#6376#0" />
-            <element signature="e#6941#7437#0" />
-            <element signature="e#7468#7966#0" />
-            <element signature="e#7990#8162#0" />
-            <element signature="e#8186#8372#0" />
-            <element signature="e#8390#8790#0" />
-            <element signature="e#8810#9214#0" />
-            <element signature="e#9232#9636#0" />
-            <element signature="e#9676#10368#0" />
-            <element signature="e#7763#7783#0" />
-          </folding>
-        </state>
-      </provider>
+    <entry file="file://$PROJECT_DIR$/Results/node1.jpg">
+      <provider selected="true" editor-type-id="images" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Results/node100.jpg">
+      <provider selected="true" editor-type-id="images" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Results/c1node100.jpg">
+      <provider selected="true" editor-type-id="images" />
     </entry>
     <entry file="file://$PROJECT_DIR$/Results/rl.txt">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="303">
-          <caret line="3895" column="16" lean-forward="true" selection-start-line="3895" selection-end-line="3896" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/onlinemap.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="158">
-          <caret line="226" column="9" selection-start-line="226" selection-start-column="9" selection-end-line="226" selection-end-column="9" />
-          <folding>
-            <element signature="e#132#4570#0" />
-            <element signature="e#4615#8977#0" />
-            <element signature="e#8994#13356#0" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/compare1.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="64">
-          <caret line="312" column="82" selection-start-line="312" selection-start-column="82" selection-end-line="312" selection-end-column="82" />
-          <folding>
-            <element signature="e#52#75#0" expanded="true" />
-            <element signature="e#11023#11095#0" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/policy.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="257">
-          <caret line="589" column="17" selection-start-line="589" selection-start-column="17" selection-end-line="589" selection-end-column="17" />
-          <folding>
-            <element signature="e#0#23#0" expanded="true" />
-            <element signature="e#6131#6175#0" />
-            <element signature="e#11031#11121#0" />
-            <element signature="e#10330#21622#0" />
-            <element signature="e#21693#23795#0" />
-            <element signature="e#23867#26132#0" />
-            <element signature="e#26196#28298#0" />
-            <element signature="e#28301#28320#0" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/environment.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="216">
-          <caret line="249" column="35" selection-start-line="249" selection-start-column="35" selection-end-line="249" selection-end-column="35" />
-          <folding>
-            <element signature="e#0#10#0" expanded="true" />
-            <element signature="e#154#9402#0" />
-            <element signature="e#8403#10581#0" />
-          </folding>
+        <state relative-caret-position="366">
+          <caret line="3895" column="15" lean-forward="true" selection-start-line="3895" selection-end-line="3896" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/Results/c1node10.jpg">
       <provider selected="true" editor-type-id="images" />
     </entry>
-    <entry file="file://$PROJECT_DIR$/Results/node10.jpg">
-      <provider selected="true" editor-type-id="images" />
-    </entry>
-    <entry file="file://$PROJECT_DIR$/Results/node1.jpg">
-      <provider selected="true" editor-type-id="images" />
-    </entry>
-    <entry file="file://$PROJECT_DIR$/Results/c1node100.jpg">
+    <entry file="file://$PROJECT_DIR$/Results/link10.jpg">
       <provider selected="true" editor-type-id="images" />
     </entry>
     <entry file="file://$PROJECT_DIR$/Results/RLN.txt">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="303">
-          <caret line="3895" column="14" selection-start-line="3895" selection-end-line="3896" />
+        <state relative-caret-position="375">
+          <caret line="3895" column="39" lean-forward="true" selection-start-line="3895" selection-start-column="151" selection-end-line="3896" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/compare1.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="226">
+          <caret line="254" column="82" selection-start-line="254" selection-start-column="82" selection-end-line="254" selection-end-column="82" />
+          <folding>
+            <element signature="e#52#75#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Results/node10.jpg">
+      <provider selected="true" editor-type-id="images" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/network.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="91">
+          <caret line="190" column="4" selection-start-line="190" selection-start-column="4" selection-end-line="190" selection-end-column="4" />
+          <folding>
+            <element signature="e#0#21#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Results/linklosslog-1.txt">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/environment.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="306">
+          <caret line="17" column="25" selection-start-line="17" selection-start-column="25" selection-end-line="17" selection-end-column="25" />
+          <folding>
+            <element signature="e#0#10#0" expanded="true" />
+            <element signature="e#8403#10581#0" />
+            <element signature="e#12245#12271#0" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/onlinemap.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="72">
+          <caret line="115" column="17" lean-forward="true" selection-start-line="115" selection-start-column="17" selection-end-line="115" selection-end-column="17" />
+          <folding>
+            <element signature="e#155#4593#0" />
+            <element signature="e#4638#9000#0" />
+            <element signature="e#9016#13375#0" />
+          </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/data.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="126">
-          <caret line="7" column="1" lean-forward="true" selection-start-line="7" selection-start-column="1" selection-end-line="7" selection-end-column="1" />
+          <caret line="7" lean-forward="true" selection-start-line="7" selection-end-line="7" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/policy.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="191">
+          <caret line="617" column="37" selection-start-line="617" selection-start-column="37" selection-end-line="617" selection-end-column="37" />
+          <folding>
+            <element signature="e#0#23#0" expanded="true" />
+            <element signature="e#2648#2677#0" />
+            <element signature="e#11031#11121#0" />
+            <element signature="e#21693#23795#0" />
+            <element signature="e#23867#26132#0" />
+            <element signature="e#26196#28298#0" />
+            <element signature="e#28301#28320#0" />
+          </folding>
         </state>
       </provider>
     </entry>

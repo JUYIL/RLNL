@@ -1,7 +1,5 @@
 import gym
 from gym import spaces
-import copy
-import networkx as nx
 import numpy as np
 from network import *
 
@@ -100,7 +98,166 @@ class NodeEnv(gym.Env):
                       avg_dst,self.closeness)
         return np.vstack(self.state).transpose()
 
-    # def __init__(self, sub):
+
+
+class LinkEnv(gym.Env):
+
+    def render(self, mode='human'):
+        pass
+
+    def __init__(self, sub):
+        self.count = -1
+        self.linkpath = getallpath(sub)
+        self.n_action = len(self.linkpath)
+        self.sub = copy.deepcopy(sub)
+        self.action_space = spaces.Discrete(self.n_action)
+        self.observation_space = spaces.Box(low=0, high=1, shape=(self.n_action, 2), dtype=np.float32)
+        self.state = None
+        self.vnr = None
+
+    def set_vnr(self, vnr):
+        self.vnr = vnr
+
+
+    def set_link(self,link):
+        self.link=link
+
+    def step(self, action):
+        self.mbw_remain = []
+        thepath = list(self.linkpath[action].values())[0]
+
+        i = 0
+        while i < len(thepath) - 1:
+            fr = thepath[i]
+            to = thepath[i + 1]
+            self.sub[fr][to]['bw_remain'] -= self.vnr[self.link[0]][self.link[1]]['bw']
+            i += 1
+
+        for paths in self.linkpath.values():
+            path = list(paths.values())[0]
+            self.mbw_remain.append(minbw(self.sub, path))
+        self.mbw_remain = (self.mbw_remain - np.min(self.mbw_remain)) / (
+                np.max(self.mbw_remain) - np.min(self.mbw_remain))
+
+        self.state = (self.mbw_remain, self.btn)
+
+        return np.vstack(self.state).transpose(), 0.0, False, {}
+
+    def statechange(self, linkmap):
+        self.mbw_remain = []
+        for vlink, slink in linkmap.items():
+            v_fr = vlink[0]
+            v_to = vlink[-1]
+            i = 0
+            while i < len(slink) - 1:
+                self.sub[slink[i]][slink[i + 1]]['bw_remain'] += self.vnr[v_fr][v_to]['bw']
+                i += 1
+
+        for paths in self.linkpath.values():
+            path = list(paths.values())[0]
+            self.mbw_remain.append(minbw(self.sub, path))
+        self.mbw_remain = (self.mbw_remain - np.min(self.mbw_remain)) / (
+                np.max(self.mbw_remain) - np.min(self.mbw_remain))
+
+        self.state = (self.mbw_remain, self.btn)
+
+
+        return np.vstack(self.state).transpose()
+
+    def reset(self):
+        """获得底层网络当前最新的状态"""
+        self.count = -1
+        mbw = []
+        btn = btns
+        self.mbw, self.btn = [], []
+        for paths in self.linkpath.values():
+            path = list(paths.values())[0]
+            mbw.append(minbw(self.sub, path))
+
+        # normalization
+        self.mbw = (mbw - np.min(mbw)) / (np.max(mbw) - np.min(mbw))
+        self.btn = (btn - np.min(btn)) / (np.max(btn) - np.min(btn))
+        self.mbw_remain = self.mbw
+        self.actions = []
+
+        self.state = (self.mbw_remain,self.btn)
+        return np.vstack(self.state).transpose()
+
+
+
+
+class MyEnv(gym.Env):
+
+    def __init__(self, sub):
+        self.count = -1
+        # self.n_action = sub.number_of_nodes()
+        # when we reset,we should also reset the sub,that's why I save an original sub
+        self.origin = copy.deepcopy(sub)
+        # this sub is for us to change states when we make a step
+        self.sub = copy.deepcopy(sub)
+        self.action_space = spaces.Box(low=-1, high=1, shape=(1, 1), dtype=np.float32)
+        self.observation_space = spaces.Box(low=0, high=1, shape=(1, 3), dtype=np.float32)
+        self.rcpu=self.vnr.nodes[self.vnode]['cpu']
+        self.acpu=self.rcpu
+        self.ucpu=0
+        self.scpu=self.sub.nodes[self.snode]['cpu']
+        self.scpur=self.sub.nodes[self.snode]['cpu_remain']
+        self.r1=self.acpu / self.rcpu
+        self.r2=self.ucpu / self.acpu
+        self.r3=self.scpur / self.scpu
+
+        self.state = None
+    def set_vnr(self,vnr):
+        self.vnr=vnr
+        # self.count=-1
+
+    def set_vnode(self,vnode):
+        self.vnode=vnode
+        # self.count=-1
+
+    def set_snode(self,snode):
+        self.snode=snode
+
+    def step(self, action):
+        self.count = self.count + 1
+        self.cpu_remain, self.bw_all_remain = [], []
+
+
+        self.cpu_remain = (self.cpu_remain - np.min(self.cpu_remain)) / (
+                np.max(self.cpu_remain) - np.min(self.cpu_remain))
+        self.bw_all_remain = (self.bw_all_remain - np.min(self.bw_all_remain)) / (
+                np.max(self.bw_all_remain) - np.min(self.bw_all_remain))
+
+
+
+        self.state = (self.cpu_remain,)
+
+        # reward = self.sub.nodes[action]['cpu_remain'] / self.sub.nodes[action]['cpu']
+        # reward = 0.0
+        reward = self.vnr.nodes[self.count]['cpu'] / self.sub.nodes[action]['cpu_remain']
+        return np.vstack(self.state).transpose(), reward, False, {}
+
+    def statechange(self,nodemap):
+
+
+        self.state = (self.r1, self.r2, self.r3)
+        return np.vstack(self.state).transpose()
+
+
+
+    def reset(self):
+        self.count = -1
+        self.sub = copy.deepcopy(self.origin)
+        self.state = (self.r1, self.r2, self.r3)
+        return np.vstack(self.state).transpose()
+
+    def render(self, mode='human'):
+        pass
+
+
+
+
+# def __init__(self, sub):
     #     self.count = -1
     #     self.n_action = sub.number_of_nodes()
     #     # when we reset,we should also reset the sub,that's why I save an original sub
@@ -225,166 +382,95 @@ class NodeEnv(gym.Env):
     # def render(self, mode='human'):
     #     pass
 
-class LinkEnv(gym.Env):
-
-    def __init__(self, sub):
-        self.count = -1
-        self.linkpath = getallpath(sub)
-        self.n_action = len(self.linkpath)
-        # when we reset,we should also reset the sub,that's why I save an original sub
-        self.origin = copy.deepcopy(sub)
-        # this sub is for us to change states when we make a step
-        self.sub = copy.deepcopy(sub)
-        # self.vnr = vnr
-        self.action_space = spaces.Discrete(self.n_action)
-        self.observation_space = spaces.Box(low=0, high=1, shape=(self.n_action, 2), dtype=np.float32)
-        mbw = []
-        btn=btns
-        self.mbw, self.btn = [], []
-        for paths in self.linkpath.values():
-            path=list(paths.values())[0]
-            mbw.append(minbw(sub,path))
-
-        # normalization
-        self.mbw = (mbw - np.min(mbw)) / (np.max(mbw) - np.min(mbw))
-        self.btn = (btn - np.min(btn)) / (np.max(btn) - np.min(btn))
-        self.mbw_remain = self.mbw
-
-        self.state = None
-
-
-    def set_vnr(self,vnr):
-        self.vnr=vnr
-        # self.count=-1
-
-    def set_link(self,link):
-        self.link=link
-
-    def step(self, action):
-        # self.count = self.count + 1
-        self.mbw_remain = []
-        thepath = list(self.linkpath[action].values())[0]
-
-        # reward = self.vnr[self.link[0]][self.link[1]]['bw'] / minbw(self.sub, thepath)
-
-        i = 0
-        while i < len(thepath) - 1:
-            fr = thepath[i]
-            to = thepath[i+1]
-            self.sub[fr][to]['bw_remain'] -= self.vnr[self.link[0]][self.link[1]]['bw']
-            i += 1
-
-        for paths in self.linkpath.values():
-            path=list(paths.values())[0]
-            self.mbw_remain.append(minbw(self.sub,path))
-        self.mbw_remain = (self.mbw_remain - np.min(self.mbw_remain)) / (
-                np.max(self.mbw_remain) - np.min(self.mbw_remain))
-
-        self.state = (self.mbw_remain,self.btn)
-
-        # reward = self.vnr[self.link[0]][self.link[1]]['bw'] / minbw(self.sub,thepath)
-        reward=0.0
-        return np.vstack(self.state).transpose(), reward, False, {}
-
-    def statechange(self,sub,linkmap):
-
-        self.mbw_remain = []
-        for vlink, slink in linkmap.items():
-            v_fr = vlink[0]
-            v_to = vlink[-1]
-            i=0
-            while i < len(slink) - 1:
-                self.sub[slink[i]][slink[i+1]]['bw_remain'] += self.vnr[v_fr][v_to]['bw']
-                i += 1
-
-        for paths in self.linkpath.values():
-            path=list(paths.values())[0]
-            self.mbw_remain.append(minbw(sub,path))
-        self.mbw_remain = (self.mbw_remain - np.min(self.mbw_remain)) / (
-                np.max(self.mbw_remain) - np.min(self.mbw_remain))
-
-        self.state = (self.mbw_remain, self.btn)
-        return np.vstack(self.state).transpose()
-
-
-
-    def reset(self):
-        self.count = -1
-        self.sub = copy.deepcopy(self.origin)
-        self.mbw_remain = self.mbw
-
-        self.state = (self.mbw_remain,
-                      self.btn)
-        return np.vstack(self.state).transpose()
-
-    def render(self, mode='human'):
-        pass
-
-
-class MyEnv(gym.Env):
-
-    def __init__(self, sub):
-        self.count = -1
-        # self.n_action = sub.number_of_nodes()
-        # when we reset,we should also reset the sub,that's why I save an original sub
-        self.origin = copy.deepcopy(sub)
-        # this sub is for us to change states when we make a step
-        self.sub = copy.deepcopy(sub)
-        self.action_space = spaces.Box(low=-1, high=1, shape=(1, 1), dtype=np.float32)
-        self.observation_space = spaces.Box(low=0, high=1, shape=(1, 3), dtype=np.float32)
-        self.rcpu=self.vnr.nodes[self.vnode]['cpu']
-        self.acpu=self.rcpu
-        self.ucpu=0
-        self.scpu=self.sub.nodes[self.snode]['cpu']
-        self.scpur=self.sub.nodes[self.snode]['cpu_remain']
-        self.r1=self.acpu / self.rcpu
-        self.r2=self.ucpu / self.acpu
-        self.r3=self.scpur / self.scpu
-
-        self.state = None
-    def set_vnr(self,vnr):
-        self.vnr=vnr
-        # self.count=-1
-
-    def set_vnode(self,vnode):
-        self.vnode=vnode
-        # self.count=-1
-
-    def set_snode(self,snode):
-        self.snode=snode
-
-    def step(self, action):
-        self.count = self.count + 1
-        self.cpu_remain, self.bw_all_remain = [], []
-
-
-        self.cpu_remain = (self.cpu_remain - np.min(self.cpu_remain)) / (
-                np.max(self.cpu_remain) - np.min(self.cpu_remain))
-        self.bw_all_remain = (self.bw_all_remain - np.min(self.bw_all_remain)) / (
-                np.max(self.bw_all_remain) - np.min(self.bw_all_remain))
-
-
-
-        self.state = (self.cpu_remain,)
-
-        # reward = self.sub.nodes[action]['cpu_remain'] / self.sub.nodes[action]['cpu']
-        # reward = 0.0
-        reward = self.vnr.nodes[self.count]['cpu'] / self.sub.nodes[action]['cpu_remain']
-        return np.vstack(self.state).transpose(), reward, False, {}
-
-    def statechange(self,nodemap):
-
-
-        self.state = (self.r1, self.r2, self.r3)
-        return np.vstack(self.state).transpose()
-
-
-
-    def reset(self):
-        self.count = -1
-        self.sub = copy.deepcopy(self.origin)
-        self.state = (self.r1, self.r2, self.r3)
-        return np.vstack(self.state).transpose()
-
-    def render(self, mode='human'):
-        pass
+# def __init__(self, sub):
+    #     self.count = -1
+    #     self.linkpath = getallpath(sub)
+    #     self.n_action = len(self.linkpath)
+    #     # when we reset,we should also reset the sub,that's why I save an original sub
+    #     self.origin = copy.deepcopy(sub)
+    #     # this sub is for us to change states when we make a step
+    #     self.sub = copy.deepcopy(sub)
+    #     # self.vnr = vnr
+    #     self.action_space = spaces.Discrete(self.n_action)
+    #     self.observation_space = spaces.Box(low=0, high=1, shape=(self.n_action, 2), dtype=np.float32)
+    #     mbw = []
+    #     btn=btns
+    #     self.mbw, self.btn = [], []
+    #     for paths in self.linkpath.values():
+    #         path=list(paths.values())[0]
+    #         mbw.append(minbw(sub,path))
+    #
+    #     # normalization
+    #     self.mbw = (mbw - np.min(mbw)) / (np.max(mbw) - np.min(mbw))
+    #     self.btn = (btn - np.min(btn)) / (np.max(btn) - np.min(btn))
+    #     self.mbw_remain = self.mbw
+    #
+    #     self.state = None
+    #
+    #
+    # def set_vnr(self,vnr):
+    #     self.vnr=vnr
+    #     # self.count=-1
+    #
+    # def set_link(self,link):
+    #     self.link=link
+    #
+    # def step(self, action):
+    #     # self.count = self.count + 1
+    #     self.mbw_remain = []
+    #     thepath = list(self.linkpath[action].values())[0]
+    #
+    #     # reward = self.vnr[self.link[0]][self.link[1]]['bw'] / minbw(self.sub, thepath)
+    #
+    #     i = 0
+    #     while i < len(thepath) - 1:
+    #         fr = thepath[i]
+    #         to = thepath[i+1]
+    #         self.sub[fr][to]['bw_remain'] -= self.vnr[self.link[0]][self.link[1]]['bw']
+    #         i += 1
+    #
+    #     for paths in self.linkpath.values():
+    #         path=list(paths.values())[0]
+    #         self.mbw_remain.append(minbw(self.sub,path))
+    #     self.mbw_remain = (self.mbw_remain - np.min(self.mbw_remain)) / (
+    #             np.max(self.mbw_remain) - np.min(self.mbw_remain))
+    #
+    #     self.state = (self.mbw_remain,self.btn)
+    #
+    #     # reward = self.vnr[self.link[0]][self.link[1]]['bw'] / minbw(self.sub,thepath)
+    #     reward=0.0
+    #     return np.vstack(self.state).transpose(), reward, False, {}
+    #
+    # def statechange(self,sub,linkmap):
+    #
+    #     self.mbw_remain = []
+    #     for vlink, slink in linkmap.items():
+    #         v_fr = vlink[0]
+    #         v_to = vlink[-1]
+    #         i=0
+    #         while i < len(slink) - 1:
+    #             self.sub[slink[i]][slink[i+1]]['bw_remain'] += self.vnr[v_fr][v_to]['bw']
+    #             i += 1
+    #
+    #     for paths in self.linkpath.values():
+    #         path=list(paths.values())[0]
+    #         self.mbw_remain.append(minbw(sub,path))
+    #     self.mbw_remain = (self.mbw_remain - np.min(self.mbw_remain)) / (
+    #             np.max(self.mbw_remain) - np.min(self.mbw_remain))
+    #
+    #     self.state = (self.mbw_remain, self.btn)
+    #     return np.vstack(self.state).transpose()
+    #
+    #
+    #
+    # def reset(self):
+    #     self.count = -1
+    #     self.sub = copy.deepcopy(self.origin)
+    #     self.mbw_remain = self.mbw
+    #
+    #     self.state = (self.mbw_remain,
+    #                   self.btn)
+    #     return np.vstack(self.state).transpose()
+    #
+    # def render(self, mode='human'):
+    #     pass

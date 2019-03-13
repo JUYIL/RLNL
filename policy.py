@@ -1,5 +1,4 @@
 import tensorflow as tf
-from network import *
 from environment import *
 import time
 import copy
@@ -44,17 +43,14 @@ class NodePolicy:
             for req in training_set:
 
                 if req.graph['type'] == 0:
-                    # reqr, reqc = 0, 0
+                    reqr, reqc = 0, 0
+                    xs, acts = [], []
                     print('req%d is mapping... ' % req.graph['id'])
                     print('node mapping...')
                     counter += 1
                     # 向环境传入当前的待映射虚拟网络
                     env.set_vnr(req)
-                    # 获得底层网络的状态
-                    # observation = obsreset
-
                     node_map = {}
-                    # xs, acts = [], []
                     for vn_id in range(req.number_of_nodes()):
                         observation = obsreset
                         x = np.reshape(observation, [1, observation.shape[0], observation.shape[1], 1])
@@ -70,73 +66,6 @@ class NodePolicy:
                             obsreset, _, done, info = env.step(sn_id)
                             node_map.update({vn_id: sn_id})
                     # end for,即一个VNR的全部节点映射全部尝试完毕
-                    if len(node_map) == req.number_of_nodes():
-                        print('link mapping...')
-                        link_map = bfslinkmap(env.sub, req, node_map)
-                        if len(link_map) == req.number_of_edges():
-                            print('req%d is mapped ' % req.graph['id'])
-                            for node in req.nodes:
-                                reqr += req.nodes[node]['cpu']
-                            reqc = reqr
-                            for vl, pl in link_map.items():
-                                vfr, vto = vl[0], vl[1]
-                                reqr += req[vfr][vto]['bw']
-                                reqc += req[vfr][vto]['bw'] * (len(pl) - 1)
-                                i = 0
-                                while i < len(pl) - 1:
-                                    env.sub[pl[i]][pl[i + 1]]['bw_remain'] -= req[vfr][vto]['bw']
-                                    i += 1
-                            mapped_info.update({req.graph['id']: (node_map, link_map)})
-                            # suc += 1
-                        else:
-                            obsreset = env.statechange(node_map)
-                            print('req%d mapping is failed ' % req.graph['id'])
-                    else:
-                        obsreset = env.statechange(node_map)
-                        print('req%d mapping is failed ' % req.graph['id'])
-
-                    if counter % 10 == 0:
-                        if reqc != 0:
-                            # reward = (reqr / reqc)*suc
-                            reward = reqr / reqc
-                        else:
-                            reward = 0
-
-                        if reward != 0:
-                            ys = tf.one_hot(acts, self.n_actions)
-                            epx = np.vstack(xs)
-                            epy = tf.Session().run(ys)
-
-                            # 返回损失函数值
-                            loss_value = self.sess.run(self.loss,
-                                                       feed_dict={self.tf_obs: epx,
-                                                                  self.input_y: epy})
-                            print('%d episode is done and the loss is' % (counter / 10), loss_value)
-                            values.append(loss_value)
-
-                            # 返回求解梯度
-                            tf_grad = self.sess.run(self.newGrads,
-                                                    feed_dict={self.tf_obs: epx,
-                                                               self.input_y: epy})
-                            # 将获得的梯度累加到gradBuffer中
-                            for ix, grad in enumerate(tf_grad):
-                                grad_buffer[ix] += grad
-                            grad_buffer[0] *= reward
-                            grad_buffer[1] *= reward
-
-                        xs, acts = [], []
-                        reqr, reqc, suc = 0, 0, 0
-
-                    # 当实验次数达到batch size整倍数，累积的梯度更新一次参数
-                    if counter % self.batch_size == 0:
-                        print("update grads")
-                        self.sess.run(self.update_grads,
-                                      feed_dict={self.kernel_grad: grad_buffer[0],
-                                                 self.biases_grad: grad_buffer[1]})
-
-                        # 清空gradBuffer
-                        for ix, grad in enumerate(grad_buffer):
-                            grad_buffer[ix] = grad * 0
                     # if len(node_map) == req.number_of_nodes():
                     #     print('link mapping...')
                     #     link_map = bfslinkmap(env.sub, req, node_map)
@@ -154,7 +83,22 @@ class NodePolicy:
                     #                 env.sub[pl[i]][pl[i + 1]]['bw_remain'] -= req[vfr][vto]['bw']
                     #                 i += 1
                     #         mapped_info.update({req.graph['id']: (node_map, link_map)})
-                    #         reward=reqr/reqc
+                    #         # suc += 1
+                    #     else:
+                    #         obsreset = env.statechange(node_map)
+                    #         print('req%d mapping is failed ' % req.graph['id'])
+                    # else:
+                    #     obsreset = env.statechange(node_map)
+                    #     print('req%d mapping is failed ' % req.graph['id'])
+                    #
+                    # if counter % 10 == 0:
+                    #     if reqc != 0:
+                    #         # reward = (reqr / reqc)*suc
+                    #         reward = reqr / reqc
+                    #     else:
+                    #         reward = 0
+                    #
+                    #     if reward != 0:
                     #         ys = tf.one_hot(acts, self.n_actions)
                     #         epx = np.vstack(xs)
                     #         epy = tf.Session().run(ys)
@@ -163,7 +107,7 @@ class NodePolicy:
                     #         loss_value = self.sess.run(self.loss,
                     #                                    feed_dict={self.tf_obs: epx,
                     #                                               self.input_y: epy})
-                    #         print("Success! The loss value is: %s" % loss_value)
+                    #         print('%d episode is done and the loss is' % (counter / 10), loss_value)
                     #         values.append(loss_value)
                     #
                     #         # 返回求解梯度
@@ -175,15 +119,13 @@ class NodePolicy:
                     #             grad_buffer[ix] += grad
                     #         grad_buffer[0] *= reward
                     #         grad_buffer[1] *= reward
-                    #     else:
-                    #         obsreset = env.statechange(node_map)
-                    #         print('req%d mapping is failed ' % req.graph['id'])
-                    # else:
-                    #     obsreset = env.statechange(node_map)
-                    #     print('req%d mapping is failed ' % req.graph['id'])
+                    #
+                    #     xs, acts = [], []
+                    #     reqr, reqc, suc = 0, 0, 0
                     #
                     # # 当实验次数达到batch size整倍数，累积的梯度更新一次参数
                     # if counter % self.batch_size == 0:
+                    #     print("update grads")
                     #     self.sess.run(self.update_grads,
                     #                   feed_dict={self.kernel_grad: grad_buffer[0],
                     #                              self.biases_grad: grad_buffer[1]})
@@ -191,6 +133,60 @@ class NodePolicy:
                     #     # 清空gradBuffer
                     #     for ix, grad in enumerate(grad_buffer):
                     #         grad_buffer[ix] = grad * 0
+                    if len(node_map) == req.number_of_nodes():
+                        print('link mapping...')
+                        link_map = bfslinkmap(env.sub, req, node_map)
+                        if len(link_map) == req.number_of_edges():
+                            print('req%d is mapped ' % req.graph['id'])
+                            for node in req.nodes:
+                                reqr += req.nodes[node]['cpu']
+                            reqc = reqr
+                            for vl, pl in link_map.items():
+                                vfr, vto = vl[0], vl[1]
+                                reqr += req[vfr][vto]['bw']
+                                reqc += req[vfr][vto]['bw'] * (len(pl) - 1)
+                                i = 0
+                                while i < len(pl) - 1:
+                                    env.sub[pl[i]][pl[i + 1]]['bw_remain'] -= req[vfr][vto]['bw']
+                                    i += 1
+                            mapped_info.update({req.graph['id']: (node_map, link_map)})
+                            reward=reqr/reqc
+                            ys = tf.one_hot(acts, self.n_actions)
+                            epx = np.vstack(xs)
+                            epy = tf.Session().run(ys)
+
+                            # 返回损失函数值
+                            loss_value = self.sess.run(self.loss,
+                                                       feed_dict={self.tf_obs: epx,
+                                                                  self.input_y: epy})
+                            print("Success! The loss value is: %s" % loss_value)
+                            values.append(loss_value)
+
+                            # 返回求解梯度
+                            tf_grad = self.sess.run(self.newGrads,
+                                                    feed_dict={self.tf_obs: epx,
+                                                               self.input_y: epy})
+                            # 将获得的梯度累加到gradBuffer中
+                            for ix, grad in enumerate(tf_grad):
+                                grad_buffer[ix] += grad
+                            grad_buffer[0] *= reward
+                            grad_buffer[1] *= reward
+                        else:
+                            obsreset = env.statechange(node_map)
+                            print('req%d mapping is failed ' % req.graph['id'])
+                    else:
+                        obsreset = env.statechange(node_map)
+                        print('req%d mapping is failed ' % req.graph['id'])
+
+                    # 当实验次数达到batch size整倍数，累积的梯度更新一次参数
+                    if counter % self.batch_size == 0:
+                        self.sess.run(self.update_grads,
+                                      feed_dict={self.kernel_grad: grad_buffer[0],
+                                                 self.biases_grad: grad_buffer[1]})
+
+                        # 清空gradBuffer
+                        for ix, grad in enumerate(grad_buffer):
+                            grad_buffer[ix] = grad * 0
 
                 if req.graph['type'] == 1:
                     if mapped_info.__contains__(req.graph['id']):
@@ -595,8 +591,6 @@ class LinkPolicy:
         self.lr = learning_rate
         self.num_epoch = num_epoch
         self.batch_size = batch_size
-
-        self.ep_obs, self.ep_as, self.ep_rs,self.req_as = [], [], [], []
         self.sub=copy.deepcopy(sub)
         self._build_net()
         self.sess = tf.Session()
@@ -611,14 +605,14 @@ class LinkPolicy:
 
 
         with tf.name_scope('conv'):
-            kernel=tf.Variable(tf.truncated_normal([1,self.n_features,1,1],dtype=tf.float32,stddev=0.1),
+            self.kernel=tf.Variable(tf.truncated_normal([1,self.n_features,1,1],dtype=tf.float32,stddev=0.1),
                                name="weights")
             conv = tf.nn.conv2d(input=self.tf_obs,
-                                filter=kernel,
+                                filter=self.kernel,
                                 strides=(1, 1,self.n_features,1),
                                 padding='VALID')
-            biases=tf.Variable(tf.constant(0.0,shape=[1],dtype=tf.float32),name="bias")
-            conv1=tf.nn.relu(tf.nn.bias_add(conv,biases))
+            self.bias=tf.Variable(tf.constant(0.0,shape=[1],dtype=tf.float32),name="bias")
+            conv1=tf.nn.relu(tf.nn.bias_add(conv,self.bias))
             self.scores=tf.reshape(conv1,[-1,self.n_actions])
 
         with tf.name_scope('output'):
@@ -704,6 +698,8 @@ class LinkPolicy:
             for req in training_set:
 
                 if req.graph['type'] == 0:
+                    xs, acts = [], []
+                    reqr, reqc = 0, 0
                     print('req%d is mapping... ' % req.graph['id'])
                     print('node mapping...')
                     counter += 1
@@ -717,8 +713,7 @@ class LinkPolicy:
                             break
                         else:
                             # 执行一次action，获取返回的四个数据
-                            nodeobservation_next, _, done, info = nodeenv.step(sn_id)
-                            nodeobreset = nodeobservation_next
+                            nodeobreset, _, done, info = nodeenv.step(sn_id)
                             node_map.update({vn_id: sn_id})
                     # end for,即一个VNR的全部节点映射全部尝试完毕
 
@@ -745,8 +740,7 @@ class LinkPolicy:
                                     # 将选择的动作添加到acts列表中
                                     acts.append(linkaction)
                                     # 执行一次action，获取返回的四个数据
-                                    observation_next, _, done, info = linkenv.step(linkaction)
-                                    obsreset = observation_next
+                                    obsreset, _, done, info = linkenv.step(linkaction)
                                     path = list(linkpath[linkaction].values())[0]
                                     link_map.update({link: path})
 
@@ -761,21 +755,7 @@ class LinkPolicy:
                                 reqr += req[vfr][vto]['bw']
                                 reqc += req[vfr][vto]['bw'] * (len(pl) - 1)
                             mapped_info.update({req.graph['id']: (node_map, link_map)})
-                        else:
-                            nodeobreset=nodeenv.statechange(node_map)
-                            obsreset = linkenv.statechange(linkenv.sub,link_map)
-                            print('req%d mapping is failed ' % req.graph['id'])
-                    else:
-                        nodeobreset = nodeenv.statechange(node_map)
-                        print('req%d mapping is failed ' % req.graph['id'])
-
-                    if counter % 10 == 0:
-                        if reqc != 0:
                             reward = reqr / reqc
-                        else:
-                            reward = 0
-
-                        if reward != 0:
                             ys = tf.one_hot(acts, self.n_actions)
                             epx = np.vstack(xs)
                             epy = tf.Session().run(ys)
@@ -784,7 +764,7 @@ class LinkPolicy:
                             loss_value = self.sess.run(self.loss,
                                                        feed_dict={self.tf_obs: epx,
                                                                   self.input_y: epy})
-                            print('%d episode is done and the loss is' % (counter / 10), loss_value)
+                            print("Success! The loss value is: %s" % loss_value)
                             values.append(loss_value)
 
                             # 返回求解梯度
@@ -796,13 +776,15 @@ class LinkPolicy:
                                 grad_buffer[ix] += grad
                             grad_buffer[0] *= reward
                             grad_buffer[1] *= reward
+                        else:
+                            nodeobreset=nodeenv.statechange(node_map)
+                            obsreset = linkenv.statechange(link_map)
+                            print('req%d mapping is failed ' % req.graph['id'])
+                    else:
+                        nodeobreset = nodeenv.statechange(node_map)
+                        print('req%d mapping is failed ' % req.graph['id'])
 
-                        xs, acts = [], []
-                        reqr, reqc = 0, 0
-
-                    # 当实验次数达到batch size整倍数，累积的梯度更新一次参数
                     if counter % self.batch_size == 0:
-                        print("update grads")
                         self.sess.run(self.update_grads,
                                       feed_dict={self.kernel_grad: grad_buffer[0],
                                                  self.biases_grad: grad_buffer[1]})
@@ -810,6 +792,48 @@ class LinkPolicy:
                         # 清空gradBuffer
                         for ix, grad in enumerate(grad_buffer):
                             grad_buffer[ix] = grad * 0
+
+                    # if counter % 10 == 0:
+                    #     if reqc != 0:
+                    #         reward = reqr / reqc
+                    #     else:
+                    #         reward = 0
+                    #
+                    #     if reward != 0:
+                    #         ys = tf.one_hot(acts, self.n_actions)
+                    #         epx = np.vstack(xs)
+                    #         epy = tf.Session().run(ys)
+                    #
+                    #         # 返回损失函数值
+                    #         loss_value = self.sess.run(self.loss,
+                    #                                    feed_dict={self.tf_obs: epx,
+                    #                                               self.input_y: epy})
+                    #         print('%d episode is done and the loss is' % (counter / 10), loss_value)
+                    #         values.append(loss_value)
+                    #
+                    #         # 返回求解梯度
+                    #         tf_grad = self.sess.run(self.newGrads,
+                    #                                 feed_dict={self.tf_obs: epx,
+                    #                                            self.input_y: epy})
+                    #         # 将获得的梯度累加到gradBuffer中
+                    #         for ix, grad in enumerate(tf_grad):
+                    #             grad_buffer[ix] += grad
+                    #         grad_buffer[0] *= reward
+                    #         grad_buffer[1] *= reward
+                    #
+                    #     xs, acts = [], []
+                    #     reqr, reqc = 0, 0
+                    #
+                    # # 当实验次数达到batch size整倍数，累积的梯度更新一次参数
+                    # if counter % self.batch_size == 0:
+                    #     print("update grads")
+                    #     self.sess.run(self.update_grads,
+                    #                   feed_dict={self.kernel_grad: grad_buffer[0],
+                    #                              self.biases_grad: grad_buffer[1]})
+                    #
+                    #     # 清空gradBuffer
+                    #     for ix, grad in enumerate(grad_buffer):
+                    #         grad_buffer[ix] = grad * 0
 
                 if req.graph['type'] == 1:
                     if mapped_info.__contains__(req.graph['id']):
@@ -820,7 +844,7 @@ class LinkPolicy:
                         nodemap = mapped_info[reqid][0]
                         linkmap = mapped_info[reqid][1]
                         nodeobreset = nodeenv.statechange(nodemap)
-                        obsreset = linkenv.statechange(linkenv.sub, linkmap)
+                        obsreset = linkenv.statechange(linkmap)
                         mapped_info.pop(reqid)
                     else:
                         pass
