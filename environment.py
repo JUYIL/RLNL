@@ -8,131 +8,222 @@ from network import *
 btns=getbtns()
 
 class NodeEnv(gym.Env):
+    def render(self, mode='human'):
+        pass
 
     def __init__(self, sub):
         self.count = -1
         self.n_action = sub.number_of_nodes()
-        # when we reset,we should also reset the sub,that's why I save an original sub
-        self.origin = copy.deepcopy(sub)
-        # this sub is for us to change states when we make a step
         self.sub = copy.deepcopy(sub)
-        # self.vnr = vnr
         self.action_space = spaces.Discrete(self.n_action)
         self.observation_space = spaces.Box(low=0, high=1, shape=(self.n_action, 5), dtype=np.float32)
-        cpu_all, bw_all = [], []
-        self.degree, self.closeness, self.avrdis = [], [], []
-        self.reqas=[]
-        for u in range(self.n_action):
-            cpu_all.append(sub.nodes[u]['cpu'])
-            bw_all.append(calculate_adjacent_bw(sub, u))
-
-        # normalization
-        self.cpu_all = (cpu_all - np.min(cpu_all)) / (np.max(cpu_all) - np.min(cpu_all))
-        self.bw_all = (bw_all - np.min(bw_all)) / (np.max(bw_all) - np.min(bw_all))
-        self.cpu_remain = self.cpu_all
-        self.bw_all_remain = self.bw_all
-        # degree centrality
-        for i in nx.degree_centrality(sub).values():
-            self.degree.append(i)
-        # closeness centrality
+        self.state = None
+        self.actions = []
+        self.degree = []
+        self.closeness = []
         for j in nx.closeness_centrality(sub).values():
             self.closeness.append(j)
-        # average distance to mapped nodes
-        self.avrdis=np.zeros(self.n_action).tolist()
-        self.state = None
+        for i in nx.degree_centrality(sub).values():
+            self.degree.append(i)
+        self.vnr = None
 
-    def set_vnr(self,vnr):
-        self.vnr=vnr
+    def set_vnr(self, vnr):
+        self.vnr = vnr
         self.count=-1
 
     def step(self, action):
+        self.actions.append(action)
         self.count = self.count + 1
-        self.cpu_remain, self.bw_all_remain = [], []
+        cpu_remain, bw_all_remain, avg_dst = [], [], []
         for u in range(self.n_action):
             adjacent_bw = calculate_adjacent_bw(self.sub, u, 'bw_remain')
             if u == action:
                 self.sub.nodes[action]['cpu_remain'] -= self.vnr.nodes[self.count]['cpu']
                 adjacent_bw -= calculate_adjacent_bw(self.vnr, self.count)
-            self.cpu_remain.append(self.sub.nodes[u]['cpu_remain'])
-            self.bw_all_remain.append(adjacent_bw)
+            cpu_remain.append(self.sub.nodes[u]['cpu_remain'])
+            bw_all_remain.append(adjacent_bw)
 
+            sum_dst = 0
+            for v in self.actions:
+                sum_dst += nx.shortest_path_length(self.sub, source=u, target=v)
+            sum_dst /= (len(self.actions) + 1)
+            avg_dst.append(sum_dst)
 
-        self.cpu_remain = (self.cpu_remain - np.min(self.cpu_remain)) / (
-                np.max(self.cpu_remain) - np.min(self.cpu_remain))
-        self.bw_all_remain = (self.bw_all_remain - np.min(self.bw_all_remain)) / (
-                np.max(self.bw_all_remain) - np.min(self.bw_all_remain))
-        self.reqas.append(action)
+        cpu_remain = (cpu_remain - np.min(cpu_remain)) / (np.max(cpu_remain) - np.min(cpu_remain))
+        bw_all_remain = (bw_all_remain - np.min(bw_all_remain)) / (np.max(bw_all_remain) - np.min(bw_all_remain))
+        avg_dst = (avg_dst - np.min(avg_dst)) / (np.max(avg_dst)-np.min(avg_dst))
 
-        avg_dst = []
-        if len(self.reqas) == self.vnr.number_of_nodes():
-            avg_dst=np.zeros(self.n_action).tolist()
-            self.reqas=[]
-
-        else:
-            for u in range(self.n_action):
-                sum_dst = 0
-                for v in self.reqas:
-                    sum_dst += nx.shortest_path_length(self.sub, source=u, target=v)
-                sum_dst /= (len(self.reqas) + 1)
-                avg_dst.append(sum_dst)
-
-        avg_dst = (avg_dst - np.min(avg_dst)) / (np.max(avg_dst) - np.min(avg_dst))
-        # self.avrdis=[(s - np.min(avg_dst)) / (np.max(avg_dst) - np.min(avg_dst)) for s in avg_dst]
-
-
-        self.state = (self.cpu_remain,
-                      self.bw_all_remain,
+        self.state = (cpu_remain,
+                      bw_all_remain,
                       self.degree,
-                      self.closeness,
-                      avg_dst)
-
-        # reward = self.sub.nodes[action]['cpu_remain'] / self.sub.nodes[action]['cpu']
-        reward = 0.0
-        # reward = self.vnr.nodes[self.count]['cpu'] / self.sub.nodes[action]['cpu_remain']
-        return np.vstack(self.state).transpose(), reward, False, {}
+                      avg_dst,self.closeness)
+        return np.vstack(self.state).transpose(), 0.0, False, {}
 
     def statechange(self, nodemap):
+        self.count = -1
+        self.actions = []
+        cpu_remain, bw_all_remain = [], []
+
         for vid, sid in nodemap.items():
             self.sub.nodes[sid]['cpu_remain'] += self.vnr.nodes[vid]['cpu']
-
-        self.cpu_remain, self.bw_all_remain = [], []
         for u in range(self.n_action):
-            self.cpu_remain.append(self.sub.nodes[u]['cpu_remain'])
-            adjacent_bw = calculate_adjacent_bw(self.sub, u, 'bw_remain')
-            self.bw_all_remain.append(adjacent_bw)
-
+            cpu_remain.append(self.sub.nodes[u]['cpu_remain'])
+            bw_all_remain.append(calculate_adjacent_bw(self.sub, u, 'bw_remain'))
         for vid, sid in nodemap.items():
-            self.bw_all_remain[sid]+=calculate_adjacent_bw(self.vnr, vid)
+            bw_all_remain[sid]+=calculate_adjacent_bw(self.vnr, vid)
 
-        self.cpu_remain = (self.cpu_remain - np.min(self.cpu_remain)) / (
-                    np.max(self.cpu_remain) - np.min(self.cpu_remain))
-        self.bw_all_remain = (self.bw_all_remain - np.min(self.bw_all_remain)) / (
-                    np.max(self.bw_all_remain) - np.min(self.bw_all_remain))
+        cpu_remain = (cpu_remain - np.min(cpu_remain)) / (np.max(cpu_remain) - np.min(cpu_remain))
+        bw_all_remain = (bw_all_remain - np.min(bw_all_remain)) / (np.max(bw_all_remain) - np.min(bw_all_remain))
+        avg_dst = np.zeros(self.n_action).tolist()
 
-        self.state = (self.cpu_remain,
-                      self.bw_all_remain,
+        self.state = (cpu_remain,
+                      bw_all_remain,
                       self.degree,
-                      self.closeness,
-                      self.avrdis)
+                      avg_dst,self.closeness)
         return np.vstack(self.state).transpose()
-
-
 
     def reset(self):
+        """获得底层网络当前最新的状态"""
         self.count = -1
-        self.sub = copy.deepcopy(self.origin)
-        self.cpu_remain = self.cpu_all
-        self.bw_all_remain = self.bw_all
-        self.avrdis=np.zeros(self.n_action).tolist()
-        self.state = (self.cpu_remain,
-                      self.bw_all_remain,
+        self.actions = []
+        cpu_remain, bw_all_remain = [], []
+        for u in range(self.n_action):
+            cpu_remain.append(self.sub.nodes[u]['cpu_remain'])
+            bw_all_remain.append(calculate_adjacent_bw(self.sub, u, 'bw_remain'))
+
+        cpu_remain = (cpu_remain - np.min(cpu_remain)) / (np.max(cpu_remain) - np.min(cpu_remain))
+        bw_all_remain = (bw_all_remain - np.min(bw_all_remain)) / (np.max(bw_all_remain) - np.min(bw_all_remain))
+        avg_dst = np.zeros(self.n_action).tolist()
+        self.state = (cpu_remain,
+                      bw_all_remain,
                       self.degree,
-                      self.closeness,
-                      self.avrdis)
+                      avg_dst,self.closeness)
         return np.vstack(self.state).transpose()
 
-    def render(self, mode='human'):
-        pass
+    # def __init__(self, sub):
+    #     self.count = -1
+    #     self.n_action = sub.number_of_nodes()
+    #     # when we reset,we should also reset the sub,that's why I save an original sub
+    #     self.origin = copy.deepcopy(sub)
+    #     # this sub is for us to change states when we make a step
+    #     self.sub = copy.deepcopy(sub)
+    #     # self.vnr = vnr
+    #     self.action_space = spaces.Discrete(self.n_action)
+    #     self.observation_space = spaces.Box(low=0, high=1, shape=(self.n_action, 5), dtype=np.float32)
+    #     cpu_all, bw_all = [], []
+    #     self.degree, self.closeness, self.avrdis = [], [], []
+    #     self.reqas=[]
+    #     for u in range(self.n_action):
+    #         cpu_all.append(sub.nodes[u]['cpu'])
+    #         bw_all.append(calculate_adjacent_bw(sub, u))
+    #
+    #     # normalization
+    #     self.cpu_all = (cpu_all - np.min(cpu_all)) / (np.max(cpu_all) - np.min(cpu_all))
+    #     self.bw_all = (bw_all - np.min(bw_all)) / (np.max(bw_all) - np.min(bw_all))
+    #     self.cpu_remain = self.cpu_all
+    #     self.bw_all_remain = self.bw_all
+    #     # degree centrality
+    #     for i in nx.degree_centrality(sub).values():
+    #         self.degree.append(i)
+    #     # closeness centrality
+    #     for j in nx.closeness_centrality(sub).values():
+    #         self.closeness.append(j)
+    #     # average distance to mapped nodes
+    #     self.avrdis=np.zeros(self.n_action).tolist()
+    #     self.state = None
+    #
+    # def set_vnr(self,vnr):
+    #     self.vnr=vnr
+    #     self.count=-1
+    #
+    # def step(self, action):
+    #     self.count = self.count + 1
+    #     self.cpu_remain, self.bw_all_remain = [], []
+    #     for u in range(self.n_action):
+    #         adjacent_bw = calculate_adjacent_bw(self.sub, u, 'bw_remain')
+    #         if u == action:
+    #             self.sub.nodes[action]['cpu_remain'] -= self.vnr.nodes[self.count]['cpu']
+    #             adjacent_bw -= calculate_adjacent_bw(self.vnr, self.count)
+    #         self.cpu_remain.append(self.sub.nodes[u]['cpu_remain'])
+    #         self.bw_all_remain.append(adjacent_bw)
+    #
+    #
+    #     self.cpu_remain = (self.cpu_remain - np.min(self.cpu_remain)) / (
+    #             np.max(self.cpu_remain) - np.min(self.cpu_remain))
+    #     self.bw_all_remain = (self.bw_all_remain - np.min(self.bw_all_remain)) / (
+    #             np.max(self.bw_all_remain) - np.min(self.bw_all_remain))
+    #     self.reqas.append(action)
+    #
+    #     avg_dst = []
+    #     if len(self.reqas) == self.vnr.number_of_nodes():
+    #         avg_dst=np.zeros(self.n_action).tolist()
+    #         self.reqas=[]
+    #
+    #     else:
+    #         for u in range(self.n_action):
+    #             sum_dst = 0
+    #             for v in self.reqas:
+    #                 sum_dst += nx.shortest_path_length(self.sub, source=u, target=v)
+    #             sum_dst /= (len(self.reqas) + 1)
+    #             avg_dst.append(sum_dst)
+    #
+    #     avg_dst = (avg_dst - np.min(avg_dst)) / (np.max(avg_dst) - np.min(avg_dst))
+    #     # self.avrdis=[(s - np.min(avg_dst)) / (np.max(avg_dst) - np.min(avg_dst)) for s in avg_dst]
+    #
+    #
+    #     self.state = (self.cpu_remain,
+    #                   self.bw_all_remain,
+    #                   self.degree,
+    #                   self.closeness,
+    #                   avg_dst)
+    #
+    #     # reward = self.sub.nodes[action]['cpu_remain'] / self.sub.nodes[action]['cpu']
+    #     reward = 0.0
+    #     # reward = self.vnr.nodes[self.count]['cpu'] / self.sub.nodes[action]['cpu_remain']
+    #     return np.vstack(self.state).transpose(), reward, False, {}
+    #
+    # def statechange(self, nodemap):
+    #     for vid, sid in nodemap.items():
+    #         self.sub.nodes[sid]['cpu_remain'] += self.vnr.nodes[vid]['cpu']
+    #
+    #     self.cpu_remain, self.bw_all_remain = [], []
+    #     for u in range(self.n_action):
+    #         self.cpu_remain.append(self.sub.nodes[u]['cpu_remain'])
+    #         adjacent_bw = calculate_adjacent_bw(self.sub, u, 'bw_remain')
+    #         self.bw_all_remain.append(adjacent_bw)
+    #
+    #     for vid, sid in nodemap.items():
+    #         self.bw_all_remain[sid]+=calculate_adjacent_bw(self.vnr, vid)
+    #
+    #     self.cpu_remain = (self.cpu_remain - np.min(self.cpu_remain)) / (
+    #                 np.max(self.cpu_remain) - np.min(self.cpu_remain))
+    #     self.bw_all_remain = (self.bw_all_remain - np.min(self.bw_all_remain)) / (
+    #                 np.max(self.bw_all_remain) - np.min(self.bw_all_remain))
+    #
+    #     self.state = (self.cpu_remain,
+    #                   self.bw_all_remain,
+    #                   self.degree,
+    #                   self.closeness,
+    #                   self.avrdis)
+    #     return np.vstack(self.state).transpose()
+    #
+    #
+    #
+    # def reset(self):
+    #     self.count = -1
+    #     self.sub = copy.deepcopy(self.origin)
+    #     self.cpu_remain = self.cpu_all
+    #     self.bw_all_remain = self.bw_all
+    #     self.avrdis=np.zeros(self.n_action).tolist()
+    #     self.state = (self.cpu_remain,
+    #                   self.bw_all_remain,
+    #                   self.degree,
+    #                   self.closeness,
+    #                   self.avrdis)
+    #     return np.vstack(self.state).transpose()
+    #
+    # def render(self, mode='human'):
+    #     pass
 
 class LinkEnv(gym.Env):
 

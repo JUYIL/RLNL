@@ -326,7 +326,7 @@ def rl():
         linku += linkuti(sub)
         times=req.graph['time']
         evaluate.update({times:(count/arrived,rc_r,rc_c,lrc,nodeu/ arrived,linku/ arrived)})
-    save_result('RLN', evaluate)
+    save_result('rl', evaluate)
     rec=count/arrived
     rc=rc_r / rc_c
 

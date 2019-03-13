@@ -54,11 +54,12 @@ class RL:
                     # 向环境传入当前的待映射虚拟网络
                     env.set_vnr(req)
                     # 获得底层网络的状态
-                    observation = obsreset
+                    # observation = obsreset
 
                     node_map = {}
                     xs, acts = [], []
                     for vn_id in range(req.number_of_nodes()):
+                        observation = obsreset
                         x = np.reshape(observation, [1, observation.shape[0], observation.shape[1], 1])
                         sn_id = self.choose_action(observation, self.sub, req.nodes[vn_id]['cpu'], acts)
                         if sn_id == -1:
@@ -155,23 +156,23 @@ class RL:
                 f.write(str(value))
                 f.write('\n')
 
-    def run(self, sub, req):
-        """基于训练后的策略网络，直接得到每个虚拟网络请求的节点映射集合"""
-
-        node_map = {}
-        env = Env(sub.net)
-        env.set_vnr(req)
-        observation = env.reset()
-        acts = []
-        for vn_id in range(req.number_of_nodes()):
-            sn_id = self.choose_max_action(observation, sub.net, req.nodes[vn_id]['cpu'], acts)
-            if sn_id == -1:
-                break
-            else:
-                acts.append(sn_id)
-                observation, _, done, info = env.step(sn_id)
-                node_map.update({vn_id: sn_id})
-        return node_map
+    # def run(self, sub, req):
+    #     """基于训练后的策略网络，直接得到每个虚拟网络请求的节点映射集合"""
+    #
+    #     node_map = {}
+    #     env = Env(sub)
+    #     env.set_vnr(req)
+    #     observation = env.reset()
+    #     acts = []
+    #     for vn_id in range(req.number_of_nodes()):
+    #         sn_id = self.choose_max_action(observation, sub.net, req.nodes[vn_id]['cpu'], acts)
+    #         if sn_id == -1:
+    #             break
+    #         else:
+    #             acts.append(sn_id)
+    #             observation, _, done, info = env.step(sn_id)
+    #             node_map.update({vn_id: sn_id})
+    #     return node_map
 
     def _build_model(self):
         """搭建策略网络"""
@@ -253,44 +254,44 @@ class RL:
             action = np.random.choice(candidate_action, p=candidate_prob)
             return action
 
-    def choose_max_action(self, observation, sub, current_node_cpu, acts):
-        """在给定状态observation下，根据策略网络输出的概率分布选择概率最大的动作，仅利用"""
-
-        x = np.reshape(observation, [1, observation.shape[0], observation.shape[1], 1])
-        tf_prob = self.sess.run(self.probability, feed_dict={self.tf_obs: x})
-        filter_prob = tf_prob.ravel()
-        for index, score in enumerate(filter_prob):
-            if index in acts or sub.nodes[index]['cpu_remain'] < current_node_cpu:
-                filter_prob[index] = 0.0
-        action = np.argmax(filter_prob)
-        if filter_prob[action] == 0.0:
-            return -1
-        else:
-            return action
-
-    def calculate_reward(self, sub, req, node_map):
-
-        link_map = sub.link_mapping(req, node_map)
-        if len(link_map) == req.number_of_edges():
-            requested, occupied = 0, 0
-
-            # node resource
-            for vn_id, sn_id in node_map.items():
-                node_resource = req.nodes[vn_id]['cpu']
-                occupied += node_resource
-                requested += node_resource
-
-            # link resource
-            for vl, path in link_map.items():
-                link_resource = req[vl[0]][vl[1]]['bw']
-                requested += link_resource
-                occupied += link_resource * (len(path) - 1)
-
-            reward = requested / occupied
-
-            return reward, link_map
-        else:
-            return -1, link_map
+    # def choose_max_action(self, observation, sub, current_node_cpu, acts):
+    #     """在给定状态observation下，根据策略网络输出的概率分布选择概率最大的动作，仅利用"""
+    #
+    #     x = np.reshape(observation, [1, observation.shape[0], observation.shape[1], 1])
+    #     tf_prob = self.sess.run(self.probability, feed_dict={self.tf_obs: x})
+    #     filter_prob = tf_prob.ravel()
+    #     for index, score in enumerate(filter_prob):
+    #         if index in acts or sub.nodes[index]['cpu_remain'] < current_node_cpu:
+    #             filter_prob[index] = 0.0
+    #     action = np.argmax(filter_prob)
+    #     if filter_prob[action] == 0.0:
+    #         return -1
+    #     else:
+    #         return action
+    #
+    # def calculate_reward(self, sub, req, node_map):
+    #
+    #     link_map = sub.link_mapping(req, node_map)
+    #     if len(link_map) == req.number_of_edges():
+    #         requested, occupied = 0, 0
+    #
+    #         # node resource
+    #         for vn_id, sn_id in node_map.items():
+    #             node_resource = req.nodes[vn_id]['cpu']
+    #             occupied += node_resource
+    #             requested += node_resource
+    #
+    #         # link resource
+    #         for vl, path in link_map.items():
+    #             link_resource = req[vl[0]][vl[1]]['bw']
+    #             requested += link_resource
+    #             occupied += link_resource * (len(path) - 1)
+    #
+    #         reward = requested / occupied
+    #
+    #         return reward, link_map
+    #     else:
+    #         return -1, link_map
 
 #Env
 import gym
@@ -313,6 +314,9 @@ class Env(gym.Env):
         self.state = None
         self.actions = []
         self.degree = []
+        # self.closeness = []
+        # for j in nx.closeness_centrality(sub).values():
+        #     self.closeness.append(j)
         for i in nx.degree_centrality(sub).values():
             self.degree.append(i)
         self.vnr = None

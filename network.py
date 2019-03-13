@@ -1,8 +1,6 @@
 import networkx as nx
 import copy
-import numpy as np
 import matplotlib.pyplot as plt
-from copy import deepcopy
 
 
 def create_sub(path):
@@ -56,71 +54,6 @@ def calculate_adjacent_bw(graph, u, kind='bw'):
         else:
             bw_sum += graph[v][u][kind]
     return bw_sum
-
-# def get_g(path):
-#     with open(path, 'r') as f:
-#         list1 = list(map(float, f.readlines()[0].strip().split(' ')))
-#         linknum = list1[1]
-#     g = np.zeros(shape=(100, 100), dtype='int')
-#     j = 1
-#     listsublink = [0, ]
-#     while j < linknum + 1:
-#         with open(path, 'r') as f:
-#             listsublink.append(list(map(float, f.readlines()[j + 100].strip().split(' '))))
-#             linkfr = listsublink[j][0]
-#             linkto = listsublink[j][1]
-#             g[int(linkfr)][int(linkto)] = 1
-#             g[int(linkto)][int(linkfr)] = 1
-#             j += 1
-#     return g
-
-# def get_path(g, a):
-#         n = len(g)
-#         step = [0 for i in range(n)]
-#         step_path = [[] for i in range(n)]
-#         step_path[a] = [[a]]
-#         q = [a]
-#         while len(q) > 0:
-#             f = q.pop()
-#             s = step[f] + 1
-#             for i in range(0, n):
-#                 if g[f][i] == 1:
-#                     if (step[i] == 0) or (step[i] > s):
-#                         step[i] = s
-#                         q.insert(0, i)
-#                         step_path[i] = deepcopy(step_path[f])
-#                         if len(step_path[i]) > 0:
-#                             for j in range(len(step_path[i])):
-#                                 step_path[i][j].append(i)
-#                     elif step[i] == s:
-#                         dp = deepcopy(step_path[f])
-#                         if len(dp) > 0:
-#                             for j in range(len(dp)):
-#                                 dp[j].append(i)
-#                         step_path[i] += dp
-#         step_path[a] = [[0]]
-#         return step_path
-
-# def caculate_avr_dis(action):
-#
-#     dlz = np.zeros(shape=(100, 100), dtype='int')
-#     i = 0
-#     while i < 100:
-#         step_path = get_path(g, i)
-#         k = 0
-#         while k < 100:
-#             if i == k:
-#                 dlz[i][k] = 0
-#             else:
-#                 dlz[i][k] = len(step_path[k][0]) - 1
-#             k += 1
-#         i += 1
-#     averdis_=[]
-#     for i in range(100):
-#         averdis_.append(dlz[i][action])
-#         i+=1
-#     # averdis= [(s - np.min(averdis_)) / (np.max(averdis_) - np.min(averdis_)) for s in averdis_]
-#     return averdis_
 
 def minbw(sub,path):
     """find the least bandwidth of a path"""
@@ -206,22 +139,6 @@ def getbtns():
         for line in lines:
             btns.append(float(line))
     return btns
-
-# def getreqs(reqnum,j):
-#     reqs = []
-#     for i in range(j,j+reqnum):
-#         filename = 'trainVN/req%s.txt' % i
-#         vnr_arrive = create_req(i, filename)
-#         vnr_leave = copy.deepcopy(vnr_arrive)
-#         vnr_leave.graph['type'] = 1
-#         vnr_leave.graph['time'] = vnr_arrive.graph['time'] + vnr_arrive.graph['duration']
-#         reqs.append(vnr_arrive)
-#         reqs.append(vnr_leave)
-#
-#     # sort the reqs by their time(including arrive time and depart time)
-#     reqs.sort(key=lambda r: r.graph['time'])
-#
-#     return reqs
 
 def get_training_set(reqnum):
     reqs = []
@@ -335,6 +252,87 @@ def bfslinkmap(sub,req,node_map):
 
 # create a substrate network
 sub1 = create_sub('sub.txt')
+
 # g=get_g('sub.txt')
 
 # btns=getbtns()
+# def get_g(path):
+#     with open(path, 'r') as f:
+#         list1 = list(map(float, f.readlines()[0].strip().split(' ')))
+#         linknum = list1[1]
+#     g = np.zeros(shape=(100, 100), dtype='int')
+#     j = 1
+#     listsublink = [0, ]
+#     while j < linknum + 1:
+#         with open(path, 'r') as f:
+#             listsublink.append(list(map(float, f.readlines()[j + 100].strip().split(' '))))
+#             linkfr = listsublink[j][0]
+#             linkto = listsublink[j][1]
+#             g[int(linkfr)][int(linkto)] = 1
+#             g[int(linkto)][int(linkfr)] = 1
+#             j += 1
+#     return g
+
+# def get_path(g, a):
+#         n = len(g)
+#         step = [0 for i in range(n)]
+#         step_path = [[] for i in range(n)]
+#         step_path[a] = [[a]]
+#         q = [a]
+#         while len(q) > 0:
+#             f = q.pop()
+#             s = step[f] + 1
+#             for i in range(0, n):
+#                 if g[f][i] == 1:
+#                     if (step[i] == 0) or (step[i] > s):
+#                         step[i] = s
+#                         q.insert(0, i)
+#                         step_path[i] = deepcopy(step_path[f])
+#                         if len(step_path[i]) > 0:
+#                             for j in range(len(step_path[i])):
+#                                 step_path[i][j].append(i)
+#                     elif step[i] == s:
+#                         dp = deepcopy(step_path[f])
+#                         if len(dp) > 0:
+#                             for j in range(len(dp)):
+#                                 dp[j].append(i)
+#                         step_path[i] += dp
+#         step_path[a] = [[0]]
+#         return step_path
+
+# def caculate_avr_dis(action):
+#
+#     dlz = np.zeros(shape=(100, 100), dtype='int')
+#     i = 0
+#     while i < 100:
+#         step_path = get_path(g, i)
+#         k = 0
+#         while k < 100:
+#             if i == k:
+#                 dlz[i][k] = 0
+#             else:
+#                 dlz[i][k] = len(step_path[k][0]) - 1
+#             k += 1
+#         i += 1
+#     averdis_=[]
+#     for i in range(100):
+#         averdis_.append(dlz[i][action])
+#         i+=1
+#     # averdis= [(s - np.min(averdis_)) / (np.max(averdis_) - np.min(averdis_)) for s in averdis_]
+#     return averdis_
+
+# def getreqs(reqnum,j):
+#     reqs = []
+#     for i in range(j,j+reqnum):
+#         filename = 'trainVN/req%s.txt' % i
+#         vnr_arrive = create_req(i, filename)
+#         vnr_leave = copy.deepcopy(vnr_arrive)
+#         vnr_leave.graph['type'] = 1
+#         vnr_leave.graph['time'] = vnr_arrive.graph['time'] + vnr_arrive.graph['duration']
+#         reqs.append(vnr_arrive)
+#         reqs.append(vnr_leave)
+#
+#     # sort the reqs by their time(including arrive time and depart time)
+#     reqs.sort(key=lambda r: r.graph['time'])
+#
+#     return reqs
