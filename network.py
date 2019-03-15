@@ -1,3 +1,4 @@
+from itertools import islice
 import networkx as nx
 import copy
 import matplotlib.pyplot as plt
@@ -230,6 +231,29 @@ def lif(n):
     plt.title('linkloss change', fontsize=15)
     plt.savefig('Results/link%s.jpg' % n)
 
+def k_shortest_path(sub,fr,to,k=5):
+    return list(islice(nx.shortest_simple_paths(sub,fr,to),k))
+
+def linkmap_k5(sub,req,node_map):
+    link_map = {}
+    for link in req.edges:
+        vn_from = link[0]
+        vn_to = link[1]
+        sn_from = node_map[vn_from]
+        sn_to = node_map[vn_to]
+        if nx.has_path(sub, sn_from, sn_to):
+            for path in k_shortest_path(sub, sn_from, sn_to):
+                if minbw(sub, path) >= req[vn_from][vn_to]['bw']:
+                    link_map.update({link: path})
+                    i = 0
+                    while i < len(path) - 1:
+                        sub[path[i]][path[i + 1]]['bw_remain'] -= req[vn_from][vn_to]['bw']
+                        i += 1
+                    break
+                else:
+                    continue
+    return link_map
+
 def bfslinkmap(sub,req,node_map):
     link_map = {}
     for link in req.edges:
@@ -252,10 +276,10 @@ def bfslinkmap(sub,req,node_map):
 
 # create a substrate network
 sub1 = create_sub('sub.txt')
-
+# btns=getbtns()
 # g=get_g('sub.txt')
 
-# btns=getbtns()
+
 # def get_g(path):
 #     with open(path, 'r') as f:
 #         list1 = list(map(float, f.readlines()[0].strip().split(' ')))

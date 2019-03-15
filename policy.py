@@ -209,7 +209,7 @@ class NodePolicy:
             iteration = iteration + 1
 
         end = (time.time() - start) / 3600
-        with open('Results/c1losslog-%s.txt' % self.num_epoch, 'w') as f:
+        with open('Results/losslog-%s.txt' % self.num_epoch, 'w') as f:
             f.write("Training time: %s hours\n" % end)
             for value in loss_average:
                 f.write(str(value))

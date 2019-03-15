@@ -256,9 +256,6 @@ class Env(gym.Env):
         self.state = None
         self.actions = []
         self.degree = []
-        # self.closeness = []
-        # for j in nx.closeness_centrality(sub).values():
-        #     self.closeness.append(j)
         for i in nx.degree_centrality(sub).values():
             self.degree.append(i)
         self.vnr = None

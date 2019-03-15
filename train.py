@@ -257,3 +257,53 @@
 #             f.write(str(meanloss))
 #             f.write('\n')
 #     return LP
+
+from onlinemap import *
+
+
+def train(name,n):
+    trs=get_training_set(1000)
+    # nodetrain for mine
+    if name=="nt":
+        nodep = NodePolicy(sub1, sub1.number_of_nodes(), 5, learning_rate=0.05, num_epoch=n, batch_size=100)
+        nodep.train(trs)
+        nodesaver = tf.train.Saver()
+        nodesaver.save(nodep.sess, "./nodemodel/nodemodel.ckpt")
+        nof(n)
+    # linktrain for mine
+    if name=="lt":
+        linkp = LinkPolicy(sub1, len(getallpath(sub1)), 2, n, 100)
+        linkp.train(trs)
+        linksaver = tf.train.Saver()
+        linksaver.save(linkp.sess, "./linkmodel/linkmodel.ckpt")
+        lif(n)
+    # nodetrain for compare1
+    if name=="c1t":
+        nodep = RL(sub1, sub1.number_of_nodes(), 4, learning_rate=0.05, num_epoch=n, batch_size=100)
+        nodep.train(trs)
+        nodesaver = tf.train.Saver()
+        nodesaver.save(nodep.sess, "./nodemodel/cp1nodemodel.ckpt")
+        c1nof(n)
+
+def main():
+    name=input("please select an algorithms('RLN','RLNL','rl'):")
+    start=time.time()
+    rec, rc=0,0
+    if name=="RLN":
+        train("nt",10)
+        rec, rc = RLN()
+    if name=="RLNL":
+        train("nt",10)
+        train("lt",10)
+        rec, rc = RLNL()
+    if name=="rl":
+        train("c1t",10)
+        rec, rc = rl()
+    end=time.time()-start
+    print(rec,rc)
+    print(end)
+
+
+
+if __name__ == '__main__':
+    main()

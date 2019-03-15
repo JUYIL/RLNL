@@ -19,3 +19,4 @@ import math
 # print(os.system("cd /home/lm/ns_allinone_3_27/ns ; echo '123' | sudo -S  /home/lm/PycharmProjects/hello/ns_allinone_3_27/ns/waf --run mycc"))
 
 # print(os.system("cd /home/lm/ns_allinone_3_27/ns/examples/tutorial ; echo '123' | sudo -S  /home/lm/PycharmProjects/hello/ns_allinone_3_27/ns/waf --pyrun examples/tutorial/my.py"))
+
