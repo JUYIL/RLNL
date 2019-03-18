@@ -20,11 +20,11 @@ class State:
         # 待映射的虚拟节点
         self.vn_id = -1
         # 选择的底层节点
-        self.sn_id = sub.net.number_of_nodes()
+        self.sn_id = sub.number_of_nodes()
         # 从开始到现在的映射记录
         self.chosen_ids = []
         # 可扩展的节点数
-        self.max_expansion = sub.net.number_of_nodes()
+        self.max_expansion = sub.number_of_nodes()
 
     def get_max_expansion(self):
         return self.max_expansion
@@ -64,7 +64,7 @@ class State:
         for i in range(self.vnr.number_of_nodes()):
             node_map.update({i: self.chosen_ids[i]})
         # link_map = self.sub.link_mapping(self.vnr, node_map)
-        link_map=linkmap_k5(self.sub,self.vnr,node_map)
+        link_map =linkmap_k5(self.sub,self.vnr,node_map)
         if len(link_map) == self.vnr.number_of_edges():
             requested, occupied = 0, 0
 
@@ -87,9 +87,9 @@ class State:
         """针对下一个虚拟节点，随机选择一个可映射的底层节点"""
 
         actions = []
-        for i in range(self.sub.net.number_of_nodes()):
+        for i in range(self.sub.number_of_nodes()):
             if i not in self.chosen_ids and \
-                    self.sub.net.nodes[i]['cpu_remain'] >= self.vnr.nodes[self.vn_id + 1]['cpu']:
+                    self.sub.nodes[i]['cpu_remain'] >= self.vnr.nodes[self.vn_id + 1]['cpu']:
                 actions.append(i)
         self.max_expansion = len(actions)
         if self.max_expansion > 0:
@@ -174,7 +174,6 @@ class MCTS:
         current_node = Node()
         init_state = State(sub, vnr)
         current_node.set_state(init_state)
-
         for vn_id in range(vnr.number_of_nodes()):
             current_node = self.search(current_node)
             sn_id = current_node.get_state().get_sn_id()
@@ -194,9 +193,12 @@ class MCTS:
         进行预测时，只需要根据Q值选择exploitation最大的节点即可，找到下一个最优的节点。
         """
 
+        # if type(node)==None :
+        #     pass
         # Run as much as possible under the computation budget
         for i in range(self.computation_budget):
             # 1. Find the best node to expand
+            # print(type(node))
             expand_node = self.tree_policy(node)
 
             # 2. Random run to add node and get reward
@@ -228,6 +230,7 @@ class MCTS:
                 return next_node
 
         # Return the leaf node
+
         return node
 
     def default_policy(self, node):

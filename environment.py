@@ -14,11 +14,14 @@ class NodeEnv(gym.Env):
         self.n_action = sub.number_of_nodes()
         self.sub = copy.deepcopy(sub)
         self.action_space = spaces.Discrete(self.n_action)
-        self.observation_space = spaces.Box(low=0, high=1, shape=(self.n_action, 5), dtype=np.float32)
+        self.observation_space = spaces.Box(low=0, high=1, shape=(self.n_action, 6), dtype=np.float32)
         self.state = None
         self.actions = []
         self.degree = []
         self.closeness = []
+        self.betweenness = []
+        for k in nx.betweenness_centrality(sub).values():
+            self.betweenness.append(k)
         for j in nx.closeness_centrality(sub).values():
             self.closeness.append(j)
         for i in nx.degree_centrality(sub).values():
@@ -54,7 +57,7 @@ class NodeEnv(gym.Env):
         self.state = (cpu_remain,
                       bw_all_remain,
                       self.degree,
-                      avg_dst,self.closeness)
+                      avg_dst,self.closeness,self.betweenness)
         return np.vstack(self.state).transpose(), 0.0, False, {}
 
     def statechange(self, nodemap):
@@ -77,7 +80,7 @@ class NodeEnv(gym.Env):
         self.state = (cpu_remain,
                       bw_all_remain,
                       self.degree,
-                      avg_dst,self.closeness)
+                      avg_dst,self.closeness,self.betweenness)
         return np.vstack(self.state).transpose()
 
     def reset(self):
@@ -95,7 +98,7 @@ class NodeEnv(gym.Env):
         self.state = (cpu_remain,
                       bw_all_remain,
                       self.degree,
-                      avg_dst,self.closeness)
+                      avg_dst,self.closeness,self.betweenness)
         return np.vstack(self.state).transpose()
 
 

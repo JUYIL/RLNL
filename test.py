@@ -9,7 +9,7 @@ import math
 # a = read.get_tensor('conv/weights')
 # b = read.get_tensor('conv/bias')
 # print(a, b)
-
+#
 # linkread=tf.train.NewCheckpointReader("./linkmodel/linkmodel.ckpt")
 # a=linkread.get_tensor('conv/weights')
 # b=linkread.get_tensor('conv/bias')

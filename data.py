@@ -7,7 +7,7 @@
 #
 
 # com1 nodepolicy 10
-# 0.651   0.8292801774766457  	0.5989195749644476  	0.22983675836980566
+# 0.705   0.8280866538392894  	0.23164926702147393 	0.08780721989821517
 # com1 nodepolicy 100 time=7h
 # 0.721   0.844027820090658   	0.6329730216219035  	0.2750193531636147
 # com1 nodepolicy 10 k=5 start=14:37 end=14:40
@@ -46,6 +46,30 @@ from onlinemap import *
 #     print(rec,rc)
 #
 # comp1train(10)
+# rec, rc = rl()
+rec1, rc1 = mcts()
 
-rec, rc = grc()
-print(rec,rc)
+
+
+# times=[]
+# start=time.time()
+# grc()
+# end=time.time()-start
+# times.append(end)
+# start=time.time()
+# rl()
+# end=time.time()-start
+# times.append(end)
+# start=time.time()
+# RLN()
+# end=time.time()-start
+# times.append(end)
+# start=time.time()
+# RLNL()
+# end=time.time()-start
+# times.append(end)
+# start=time.time()
+# mcts()
+# end=time.time()-start
+# times.append(end)
+# print(times)

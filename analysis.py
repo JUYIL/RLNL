@@ -3,8 +3,8 @@ import matplotlib.pyplot as plt
 
 # line_types = ['b:', 'r--', 'y-.', 'g-', 'm:']
 # algorithms = ['RLN', 'RLNL', 'RIM', 'RLV']
-line_types = ['b:', 'r--', 'y-.', 'g-', 'm:']
-algorithms = ['RLN', 'RLNL', 'rl100', 'GRC', 'RIM']
+line_types = ['b:', 'r--', 'y-.', 'g-', 'm:', 'c--']
+algorithms = ['RLN', 'RLNL', 'rl', 'GRC', 'RIM', 'MCTS']
 metrics = {'acceptance ratio': 'Acceptance Ratio',
            'average revenue': 'Long Time Average Revenue',
            'average cost': 'Long Time Average Cost',
